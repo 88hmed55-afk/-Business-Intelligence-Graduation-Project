@@ -1,0 +1,134 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 226 100% 98%;
+    --foreground: 224 71% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 224 71% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 71% 10%;
+
+    --primary: 243 75% 59%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 226 50% 94%;
+    --secondary-foreground: 234 55% 30%;
+
+    --muted: 226 40% 94%;
+    --muted-foreground: 222 18% 44%;
+
+    --accent: 226 60% 92%;
+    --accent-foreground: 234 55% 30%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 226 30% 88%;
+    --input: 226 30% 84%;
+    --ring: 243 75% 59%;
+
+    --radius: 0.75rem;
+
+    --chart-1: 243 75% 59%;
+    --chart-2: 199 89% 48%;
+    --chart-3: 152 60% 44%;
+    --chart-4: 262 83% 62%;
+    --chart-5: 35 92% 50%;
+  }
+
+  .dark {
+    --background: 229 40% 7%;
+    --foreground: 226 50% 94%;
+
+    --card: 228 34% 10%;
+    --card-foreground: 226 50% 94%;
+
+    --popover: 228 34% 10%;
+    --popover-foreground: 226 50% 94%;
+
+    --primary: 243 75% 68%;
+    --primary-foreground: 228 45% 8%;
+
+    --secondary: 228 30% 16%;
+    --secondary-foreground: 226 50% 92%;
+
+    --muted: 228 30% 15%;
+    --muted-foreground: 224 20% 62%;
+
+    --accent: 228 35% 18%;
+    --accent-foreground: 226 60% 94%;
+
+    --destructive: 0 63% 45%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 228 26% 20%;
+    --input: 228 26% 22%;
+    --ring: 243 75% 68%;
+
+    --chart-1: 243 80% 72%;
+    --chart-2: 199 90% 56%;
+    --chart-3: 152 65% 50%;
+    --chart-4: 262 85% 70%;
+    --chart-5: 35 92% 58%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  ::selection {
+    @apply bg-primary/20 text-primary;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-muted-foreground/25;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/40;
+  }
+}
+
+@layer components {
+  .glass-panel {
+    @apply border border-border/60 bg-card/80 backdrop-blur-xl shadow-glass-sm;
+  }
+
+  .glass-card {
+    @apply glass-panel rounded-xl transition-all duration-200 hover:shadow-glass;
+  }
+
+  .gradient-text {
+    @apply bg-gradient-to-r from-primary to-indigo-400 bg-clip-text text-transparent;
+  }
+
+  .app-gradient {
+    background-image: linear-gradient(135deg, hsl(var(--primary) / 0.12), hsl(var(--primary) / 0.02) 40%, transparent);
+  }
+}

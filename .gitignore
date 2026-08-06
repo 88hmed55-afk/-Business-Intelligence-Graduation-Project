@@ -1,0 +1,48 @@
+# ============ Python ============
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+build/
+dist/
+*.whl
+
+# ============ Node / Frontend ============
+node_modules/
+frontend/dist/
+dist/
+*.local
+.vite/
+.eslintcache
+
+# ============ Environment ============
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# ============ Logs & Runtime ============
+logs/
+*.log
+npm-debug.log*
+*.pid
+
+# ============ IDE / OS ============
+.vscode/
+.idea/
+*.iml
+.DS_Store
+Thumbs.db
+
+# ============ Docker ============
+*.container-log
+
+# ============ Project docs (excluded) ============
+/مجلد جديد/
