@@ -4,6 +4,11 @@ version = "1.0.0"
 description = "Business Intelligence Management System API"
 requires-python = ">=3.12"
 
+# Tells the Vercel Python runtime where the FastAPI ASGI application lives.
+# The ASGI object is `app` defined in backend/app/main.py.
+[tool.vercel]
+entrypoint = "app.main:app"
+
 [tool.ruff]
 line-length = 120
 target-version = "py312"

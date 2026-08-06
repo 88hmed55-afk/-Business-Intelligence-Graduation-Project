@@ -1,0 +1,28 @@
+# ============================================================
+# Vercel deployment exclusions
+# Files below are never uploaded to Vercel.
+# ============================================================
+
+# Secrets - never upload
+.env
+.env.*
+!.env.example
+
+# Node / frontend build artifacts
+node_modules
+frontend/node_modules
+frontend/dist
+frontend/.vite
+
+# Python artifacts
+__pycache__
+*.py[cod]
+.pytest_cache
+.venv
+
+# Logs
+logs
+backend/logs
+
+# Local documentation folder (not part of the deployment)
+مجلد جديد

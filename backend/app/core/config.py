@@ -1,4 +1,5 @@
 import json
+import os
 from functools import lru_cache
 from typing import Any
 
@@ -75,6 +76,9 @@ class Settings(BaseSettings):
 
     @property
     def DATABASE_URL(self) -> str:
+        override = os.environ.get("DATABASE_URL")
+        if override:
+            return override
         return (
             f"postgresql+psycopg2://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}"
             f"@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
@@ -82,6 +86,9 @@ class Settings(BaseSettings):
 
     @property
     def REDIS_URL(self) -> str:
+        override = os.environ.get("REDIS_URL")
+        if override:
+            return override
         auth = f":{self.REDIS_PASSWORD}@" if self.REDIS_PASSWORD else ""
         return f"redis://{auth}{self.REDIS_HOST}:{self.REDIS_PORT}/{self.REDIS_DB}"
 
