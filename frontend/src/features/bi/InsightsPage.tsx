@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import {
   BarChart3,
   Filter,
@@ -29,7 +30,7 @@ function InsightCard({ insight }: { insight: any }) {
   const s = severityMap[insight.severity] ?? severityMap.info;
 
   return (
-    <div className={cn("rounded-xl border-l-4 p-4 transition-all hover:shadow-md", s.bg)}>
+    <div className={cn("rounded-xl border-s-4 p-4 transition-all hover:shadow-md", s.bg)}>
       <div className="flex items-start gap-3">
         <div className="mt-0.5 shrink-0">{s.icon}</div>
         <div className="flex-1">
@@ -54,6 +55,7 @@ function InsightCard({ insight }: { insight: any }) {
 }
 
 export function InsightsPage() {
+  const { t } = useTranslation();
   const { dateFrom, dateTo, getParams } = useDateFilterStore();
   const params = getParams();
 
@@ -82,7 +84,7 @@ export function InsightsPage() {
     queryFn: () => biApi.aggregate("warehouse", params),
   });
 
-  if (errInsights) return <ErrorState message="Could not load insights." />;
+  if (errInsights) return <ErrorState message={t("bi:common.loadFailed")} />;
 
   const insightList = insightsData?.insights ?? [];
   const rankItems = rankData?.items ?? [];
@@ -90,8 +92,8 @@ export function InsightsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Insights & Rankings"
-        description="Smart business insights and top rankings"
+        title={t("bi:insights.title")}
+        description={t("bi:insights.subtitle")}
       >
         <DateFilter />
       </PageHeader>
@@ -100,7 +102,7 @@ export function InsightsPage() {
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-sm">
             <Zap className="h-4 w-4 text-primary" />
-            Business Insights
+            {t("bi:insights.businessInsights")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -115,7 +117,7 @@ export function InsightsPage() {
               ))}
             </div>
           ) : (
-            <p className="py-8 text-center text-sm text-muted-foreground">No insights for this period.</p>
+            <p className="py-8 text-center text-sm text-muted-foreground">{t("bi:insights.noData")}</p>
           )}
         </CardContent>
       </Card>
@@ -125,7 +127,7 @@ export function InsightsPage() {
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-sm">
               <Trophy className="h-4 w-4 text-primary" />
-              Top Products
+              {t("bi:insights.topProducts")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -136,7 +138,7 @@ export function InsightsPage() {
                 title=""
                 data={rankItems.map(i => ({ name: i.name, revenue: i.value }))}
                 yKey="name"
-                series={[{ key: "revenue", name: "Revenue" }]}
+                series={[{ key: "revenue", name: t("bi:trends.revenue") }]}
                 height={Math.max(280, rankItems.length * 36)}
               />
             )}
@@ -147,7 +149,7 @@ export function InsightsPage() {
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-sm">
               <BarChart3 className="h-4 w-4 text-primary" />
-              Top Products by Rank
+              {t("bi:insights.topProductsByRank")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
@@ -171,17 +173,17 @@ export function InsightsPage() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <DonutChartCard
-          title="Category Distribution"
+          title={t("bi:insights.categoryDistribution")}
           data={(catAgg?.buckets ?? []).map(b => ({ name: b.label, value: b.value }))}
           height={260}
         />
         <DonutChartCard
-          title="Order Status"
+          title={t("bi:insights.orderStatus")}
           data={(statusAgg?.buckets ?? []).map(b => ({ name: b.label, value: b.value }))}
           height={260}
         />
         <DonutChartCard
-          title="By Warehouse"
+          title={t("bi:insights.byWarehouse")}
           data={(warehouseAgg?.buckets ?? []).map(b => ({ name: b.label, value: b.value }))}
           height={260}
         />

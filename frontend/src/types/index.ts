@@ -141,9 +141,22 @@ export interface Paginated<T> {
   pages: number;
 }
 
-export interface ApiErrorPayload {
-  detail?: string | Array<{ loc: unknown[]; msg: string; type: string }>;
+export interface ApiErrorDetail {
+  loc?: unknown[];
+  msg?: string;
+  type?: string;
+}
+
+export interface ApiErrorObject {
+  code?: string;
   message?: string;
+  details?: ApiErrorDetail[] | unknown;
+}
+
+export interface ApiErrorPayload {
+  detail?: string | ApiErrorDetail[];
+  message?: string;
+  error?: ApiErrorObject;
 }
 
 export interface HealthResponse {

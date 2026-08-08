@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Building2, Mail, MapPin, PenLine, Phone, Plus, Trash2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { DataPagination } from "@/components/common/DataPagination";
@@ -25,7 +26,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { CustomerDialog } from "@/features/customers/CustomerDialog";
 import { customersApi } from "@/features/customers/api";
-import { ApiClientError } from "@/lib/api";
+import { getErrorMessage } from "@/lib/error-messages";
 import { cn, formatCurrency, formatDateShort, initials } from "@/lib/utils";
 import type { Customer, CustomerStatus } from "@/types";
 
@@ -48,6 +49,7 @@ const statusOptions: Array<{ value: string; label: string }> = [
 
 export function CustomersPage() {
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
@@ -79,30 +81,27 @@ export function CustomersPage() {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => customersApi.remove(id),
     onSuccess: () => {
-      toast({ title: "Customer deleted", variant: "success" });
+      toast({ title: t("customers:deletedToast"), variant: "success" });
       setDeleting(null);
     },
     onError: (error: unknown) => {
       toast({
-        title: "Could not delete customer",
-        description: error instanceof ApiClientError ? error.message : "Unexpected error",
+        title: t("customers:deleteFailedToast"),
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     },
   });
 
   if (isError) {
-    return <ErrorState message="Could not load customers." onRetry={() => void refetch()} />;
+    return <ErrorState message={t("customers:loadFailed")} onRetry={() => void refetch()} />;
   }
 
   const customers = data?.items ?? [];
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Customers"
-        description="Manage your customer directory, profiles, and statuses."
-      >
+      <PageHeader title={t("customers:title")} description={t("customers:description")}>
         <Button
           onClick={() => {
             setEditing(null);
@@ -110,7 +109,7 @@ export function CustomersPage() {
           }}
         >
           <Plus className="h-4 w-4" />
-          New customer
+          {t("customers:add")}
         </Button>
       </PageHeader>
 
@@ -119,12 +118,12 @@ export function CustomersPage() {
           <input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search customers…"
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pl-9 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            placeholder={t("customers:searchPlaceholder")}
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 ps-9 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           />
           <svg
             viewBox="0 0 24 24"
-            className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+            className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
             fill="none"
             stroke="currentColor"
             strokeWidth="2"
@@ -141,12 +140,14 @@ export function CustomersPage() {
           }}
         >
           <SelectTrigger className="w-full sm:w-44">
-            <SelectValue placeholder="All statuses" />
+            <SelectValue placeholder={t("customers:filterAll")} />
           </SelectTrigger>
           <SelectContent>
             {statusOptions.map((option) => (
               <SelectItem key={option.value} value={option.value}>
-                {option.label}
+                {option.value === ""
+                  ? t("customers:filterAll")
+                  : t("statuses." + option.value, { defaultValue: option.label })}
               </SelectItem>
             ))}
           </SelectContent>
@@ -163,20 +164,20 @@ export function CustomersPage() {
         ) : customers.length === 0 ? (
           <div className="p-12 text-center">
             <Building2 className="mx-auto h-10 w-10 text-muted-foreground" />
-            <p className="mt-3 font-medium">No customers found</p>
-            <p className="text-sm text-muted-foreground">Try adjusting your search or filters.</p>
+            <p className="mt-3 font-medium">{t("customers:emptyTitle")}</p>
+            <p className="text-sm text-muted-foreground">{t("customers:emptyDescription")}</p>
           </div>
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b bg-muted/40 text-left text-xs text-muted-foreground">
-                <th className="px-4 py-3 font-medium">Customer</th>
-                <th className="px-4 py-3 font-medium">Contact</th>
-                <th className="px-4 py-3 font-medium">Location</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium">Total spent</th>
-                <th className="px-4 py-3 font-medium">Joined</th>
-                <th className="px-4 py-3 text-right font-medium">Actions</th>
+              <tr className="border-b bg-muted/40 text-start text-xs text-muted-foreground">
+                <th className="px-4 py-3 font-medium">{t("customers:table.customer")}</th>
+                <th className="px-4 py-3 font-medium">{t("customers:table.contact")}</th>
+                <th className="px-4 py-3 font-medium">{t("customers:table.location")}</th>
+                <th className="px-4 py-3 font-medium">{t("customers:table.status")}</th>
+                <th className="px-4 py-3 font-medium">{t("customers:table.totalSpent")}</th>
+                <th className="px-4 py-3 font-medium">{t("customers:table.joined")}</th>
+                <th className="px-4 py-3 text-end font-medium">{t("customers:table.actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -220,7 +221,9 @@ export function CustomersPage() {
                     )}
                   </td>
                   <td className="px-4 py-3">
-                    <Badge variant={statusVariant[customer.status]}>{customer.status}</Badge>
+                    <Badge variant={statusVariant[customer.status]}>
+                      {t("statuses." + customer.status, { defaultValue: customer.status })}
+                    </Badge>
                   </td>
                   <td className="px-4 py-3 font-medium">
                     {formatCurrency(customer.total_spent ?? 0)}
@@ -228,11 +231,11 @@ export function CustomersPage() {
                   <td className="px-4 py-3 text-muted-foreground">
                     {formatDateShort(customer.created_at)}
                   </td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-4 py-3 text-end">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <span className="sr-only">Actions</span>
+                          <span className="sr-only">{t("customers:table.actions")}</span>
                           <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
                             <circle cx="12" cy="5" r="1.5" />
                             <circle cx="12" cy="12" r="1.5" />
@@ -248,14 +251,14 @@ export function CustomersPage() {
                           }}
                         >
                           <PenLine />
-                          Edit
+                          {t("actions.edit")}
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => setDeleting(customer)}
                           className="text-destructive focus:text-destructive"
                         >
                           <Trash2 />
-                          Delete
+                          {t("actions.delete")}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -283,9 +286,9 @@ export function CustomersPage() {
           if (!open) setDeleting(null);
         }}
         onConfirm={() => (deleting ? deleteMutation.mutateAsync(deleting.id) : Promise.resolve())}
-        title="Delete customer"
-        description={deleting ? `Are you sure you want to delete "${deleting.full_name}"?` : undefined}
-        confirmLabel="Delete"
+        title={t("customers:deleteConfirmTitle")}
+        description={deleting ? t("customers:deleteConfirmDescription", { name: deleting.full_name }) : undefined}
+        confirmLabel={t("actions.delete")}
       />
     </div>
   );

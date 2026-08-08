@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { TrendingUp, Zap } from "lucide-react";
 
 import { BarChartCard } from "@/components/charts";
@@ -14,26 +15,34 @@ import { cn } from "@/lib/utils";
 import { useDateFilterStore } from "@/stores/date-filter-store";
 
 const METRICS = [
-  { key: "revenue", label: "Revenue", format: "currency" as const },
-  { key: "orders", label: "Orders", format: "number" as const },
-  { key: "profit", label: "Profit", format: "currency" as const },
-  { key: "customers", label: "Customers", format: "number" as const },
+  { key: "revenue", format: "currency" as const },
+  { key: "orders", format: "number" as const },
+  { key: "profit", format: "currency" as const },
+  { key: "customers", format: "number" as const },
 ];
 
 const PERIODS_OPTIONS = [3, 6, 12, 24];
 
 export function ForecastPage() {
+  const { t } = useTranslation();
   const { dateFrom, dateTo, getParams } = useDateFilterStore();
   const params = getParams();
   const [metric, setMetric] = useState("revenue");
   const [periods, setPeriods] = useState(6);
+
+  const metricLabels: Record<string, string> = {
+    revenue: t("bi:trends.revenue"),
+    orders: t("bi:trends.orders"),
+    profit: t("bi:trends.profit"),
+    customers: t("bi:trends.customers"),
+  };
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["bi", "forecast", metric, periods, dateFrom, dateTo],
     queryFn: () => biApi.forecast(metric, periods, params),
   });
 
-  if (isError) return <ErrorState message="Could not load forecast." onRetry={() => void refetch()} />;
+  if (isError) return <ErrorState message={t("bi:common.loadFailed")} onRetry={() => void refetch()} />;
 
   const points = data?.points ?? [];
   const chartData = points.map(p => ({
@@ -53,15 +62,15 @@ export function ForecastPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Forecasting"
-        description="Predictive analytics and trend projections"
+        title={t("bi:forecasting.title")}
+        description={t("bi:forecasting.subtitle")}
       >
         <DateFilter />
       </PageHeader>
 
       <div className="flex flex-wrap items-center gap-4">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">Metric:</span>
+          <span className="text-sm font-medium">{t("bi:trends.metric")}:</span>
           <div className="flex gap-1">
             {METRICS.map(m => (
               <Button
@@ -70,13 +79,13 @@ export function ForecastPage() {
                 size="sm"
                 onClick={() => setMetric(m.key)}
               >
-                {m.label}
+                {metricLabels[m.key]}
               </Button>
             ))}
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">Forecast:</span>
+          <span className="text-sm font-medium">{t("bi:forecasting.forecast")}:</span>
           <div className="flex gap-1">
             {PERIODS_OPTIONS.map(p => (
               <Button
@@ -85,7 +94,7 @@ export function ForecastPage() {
                 size="sm"
                 onClick={() => setPeriods(p)}
               >
-                {p}M
+                {t("bi:forecasting.monthsShort", { count: p })}
               </Button>
             ))}
           </div>
@@ -106,7 +115,7 @@ export function ForecastPage() {
               <CardHeader className="pb-2">
                 <CardTitle className="flex items-center gap-2 text-sm">
                   <TrendingUp className="h-4 w-4" />
-                  {METRICS.find(m => m.key === metric)?.label} Forecast
+                  {t("bi:forecasting.metricForecast", { metric: metricLabels[metric] })}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -172,11 +181,11 @@ export function ForecastPage() {
                           ))}
                           <g>
                             <rect x={pad.l} y={8} width={12} height={3} rx={1.5} fill="hsl(var(--chart-1))" />
-                            <text x={pad.l + 16} y={12} fontSize={10} fill="hsl(var(--muted-foreground))">Actual</text>
+                            <text x={pad.l + 16} y={12} fontSize={10} fill="hsl(var(--muted-foreground))">{t("bi:forecasting.historical")}</text>
                             <rect x={pad.l + 80} y={8} width={12} height={3} rx={1.5} fill="hsl(var(--primary))" />
-                            <text x={pad.l + 96} y={12} fontSize={10} fill="hsl(var(--muted-foreground))">Forecast</text>
+                            <text x={pad.l + 96} y={12} fontSize={10} fill="hsl(var(--muted-foreground))">{t("bi:forecasting.forecasted")}</text>
                             <rect x={pad.l + 160} y={8} width={12} height={3} rx={1.5} fill="hsl(var(--primary))" fillOpacity={0.2} />
-                            <text x={pad.l + 176} y={12} fontSize={10} fill="hsl(var(--muted-foreground))">Confidence Band</text>
+                            <text x={pad.l + 176} y={12} fontSize={10} fill="hsl(var(--muted-foreground))">{t("bi:forecasting.confidenceBand")}</text>
                           </g>
                         </g>
                       );
@@ -190,7 +199,7 @@ export function ForecastPage() {
               <Card className="glass-card">
                 <CardContent className="p-5 text-center">
                   <TrendingUp className="mx-auto mb-2 h-8 w-8 text-primary" />
-                  <p className="text-xs text-muted-foreground">Forecast Trend</p>
+                  <p className="text-xs text-muted-foreground">{t("bi:forecasting.forecastTrend")}</p>
                   <p className={cn("text-2xl font-bold capitalize", trendColors[data?.trend ?? "stable"] ?? "")}>
                     {data?.trend ?? "—"}
                   </p>
@@ -199,7 +208,7 @@ export function ForecastPage() {
               <Card className="glass-card">
                 <CardContent className="p-5 text-center">
                   <Zap className="mx-auto mb-2 h-8 w-8 text-amber-500" />
-                  <p className="text-xs text-muted-foreground">Growth Rate</p>
+                  <p className="text-xs text-muted-foreground">{t("bi:forecasting.growthRate")}</p>
                   <p className="text-2xl font-bold">
                     {data?.growth_pct !== undefined ? `${data.growth_pct >= 0 ? "+" : ""}${data.growth_pct.toFixed(1)}%` : "—"}
                   </p>
@@ -207,7 +216,7 @@ export function ForecastPage() {
               </Card>
               <Card className="glass-card">
                 <CardContent className="p-5 text-center">
-                  <p className="text-xs text-muted-foreground">Confidence</p>
+                  <p className="text-xs text-muted-foreground">{t("bi:forecasting.confidence")}</p>
                   <p className="mt-1 text-2xl font-bold">
                     {data?.confidence !== undefined ? `${(data.confidence * 100).toFixed(0)}%` : "—"}
                   </p>
@@ -217,8 +226,8 @@ export function ForecastPage() {
           </div>
 
           <BarChartCard
-            title="Forecast Comparison"
-            description="Actual vs Predicted values"
+            title={t("bi:forecasting.forecastComparison")}
+            description={t("bi:forecasting.forecastComparisonDescription")}
             data={chartData.map(d => ({
               period: d.period,
               ...(d.actual !== null && d.actual !== undefined ? { Actual: d.actual } : {}),
@@ -226,8 +235,8 @@ export function ForecastPage() {
             }))}
             xKey="period"
             series={[
-              ...(chartData.some(d => d.actual !== null) ? [{ key: "Actual", name: "Actual", color: "hsl(var(--chart-1))" }] : []),
-              { key: "Predicted", name: "Predicted", color: "hsl(var(--primary))" },
+              ...(chartData.some(d => d.actual !== null) ? [{ key: "Actual", name: t("bi:forecasting.historical"), color: "hsl(var(--chart-1))" }] : []),
+              { key: "Predicted", name: t("bi:forecasting.forecasted"), color: "hsl(var(--primary))" },
             ]}
             height={280}
           />

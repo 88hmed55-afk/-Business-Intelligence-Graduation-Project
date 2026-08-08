@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -21,7 +22,7 @@ import {
   type DashboardCreatePayload,
   type DashboardUpdatePayload,
 } from "@/features/dashboards/api";
-import { ApiClientError } from "@/lib/api";
+import { getErrorMessage } from "@/lib/error-messages";
 import type { Dashboard } from "@/types";
 
 interface DashboardDialogProps {
@@ -31,6 +32,7 @@ interface DashboardDialogProps {
 }
 
 export function DashboardDialog({ open, onOpenChange, dashboard }: DashboardDialogProps) {
+  const { t } = useTranslation();
   const { toast } = useToast();
 
   const [name, setName] = useState("");
@@ -48,13 +50,13 @@ export function DashboardDialog({ open, onOpenChange, dashboard }: DashboardDial
   const createMutation = useMutation({
     mutationFn: (payload: DashboardCreatePayload) => dashboardsApi.create(payload),
     onSuccess: () => {
-      toast({ title: "Dashboard created", variant: "success" });
+      toast({ title: t("dashboards:createdToast"), variant: "success" });
       onOpenChange(false);
     },
     onError: (error: unknown) => {
       toast({
-        title: "Could not create dashboard",
-        description: error instanceof ApiClientError ? error.message : "Unexpected error",
+        title: t("dashboards:createFailedToast"),
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     },
@@ -64,13 +66,13 @@ export function DashboardDialog({ open, onOpenChange, dashboard }: DashboardDial
     mutationFn: ({ id, payload }: { id: string; payload: DashboardUpdatePayload }) =>
       dashboardsApi.update(id, payload),
     onSuccess: () => {
-      toast({ title: "Dashboard updated", variant: "success" });
+      toast({ title: t("dashboards:updatedToast"), variant: "success" });
       onOpenChange(false);
     },
     onError: (error: unknown) => {
       toast({
-        title: "Could not update dashboard",
-        description: error instanceof ApiClientError ? error.message : "Unexpected error",
+        title: t("dashboards:updateFailedToast"),
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     },
@@ -96,42 +98,42 @@ export function DashboardDialog({ open, onOpenChange, dashboard }: DashboardDial
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{dashboard ? "Edit dashboard" : "Create dashboard"}</DialogTitle>
+          <DialogTitle>{dashboard ? t("dashboards:edit") : t("dashboards:create")}</DialogTitle>
           <DialogDescription>
             {dashboard
-              ? "Update the details of this dashboard."
-              : "Create a new dashboard to organize your KPIs."}
+              ? t("dashboards:editDescription")
+              : t("dashboards:createDescription")}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Name</Label>
+            <Label htmlFor="name">{t("labels.name")}</Label>
             <Input
               id="name"
               value={name}
               onChange={(event) => setName(event.target.value)}
-              placeholder="Sales Performance"
+              placeholder={t("dashboards:fields.namePlaceholder")}
               required
               maxLength={200}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">{t("dashboards:fields.description")}</Label>
             <Textarea
               id="description"
               value={description}
               onChange={(event) => setDescription(event.target.value)}
-              placeholder="Optional description"
+              placeholder={t("dashboards:fields.descriptionPlaceholder")}
               rows={3}
             />
           </div>
           <div className="flex items-center justify-between rounded-lg border p-3">
             <div>
               <Label htmlFor="public" className="cursor-pointer">
-                Public dashboard
+                {t("dashboards:publicDashboard")}
               </Label>
               <p className="text-xs text-muted-foreground">
-                Allow other users to view this dashboard
+                {t("dashboards:publicDashboardHint")}
               </p>
             </div>
             <Switch id="public" checked={isPublic} onCheckedChange={setIsPublic} />
@@ -143,11 +145,11 @@ export function DashboardDialog({ open, onOpenChange, dashboard }: DashboardDial
               onClick={() => onOpenChange(false)}
               disabled={isPending}
             >
-              Cancel
+              {t("actions.cancel")}
             </Button>
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-              {dashboard ? "Save changes" : "Create dashboard"}
+              {dashboard ? t("actions.save") : t("dashboards:create")}
             </Button>
           </DialogFooter>
         </form>

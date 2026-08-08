@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -61,6 +62,7 @@ const actionVariant: Record<
 };
 
 export function DashboardPage() {
+  const { t } = useTranslation();
   const user = useAuthStore((state) => state.user);
   const isAdmin = user?.role === "admin";
   const range = todayRange(12);
@@ -147,13 +149,13 @@ export function DashboardPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title={`Welcome back, ${user?.full_name?.split(" ")[0] ?? "there"}`}
-        description="Here is what is happening across your business today."
+        title={t("dashboard:greeting", { name: user?.full_name?.split(" ")[0] ?? "there" })}
+        description={t("dashboard:greetingDescription")}
       >
         <Button asChild>
           <Link to="/orders">
             <ShoppingCart className="h-4 w-4" />
-            New order
+            {t("dashboard:actions.newOrder")}
           </Link>
         </Button>
       </PageHeader>
@@ -161,38 +163,38 @@ export function DashboardPage() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {[
           {
-            title: "Revenue",
+            title: t("dashboard:kpis.revenue"),
             value: revenue,
             icon: <CircleDollarSign className="h-4 w-4" />,
             suffix: "",
             render: () => <span className="text-3xl font-bold tracking-tight">{formatCurrency(revenue)}</span>,
           },
           {
-            title: "Gross Profit",
+            title: t("dashboard:kpis.grossProfit"),
             value: profit,
             icon: <TrendingUp className="h-4 w-4" />,
             render: () => <span className="text-3xl font-bold tracking-tight">{formatCurrency(profit)}</span>,
           },
           {
-            title: "Orders",
+            title: t("dashboard:kpis.orders"),
             value: overview?.total_orders,
             icon: <Receipt className="h-4 w-4" />,
             render: null,
           },
           {
-            title: "Customers",
+            title: t("dashboard:kpis.customers"),
             value: overview?.total_customers ?? customerPage?.total,
             icon: <Users className="h-4 w-4" />,
             render: null,
           },
           {
-            title: "Products",
+            title: t("dashboard:kpis.products"),
             value: overview?.total_products,
             icon: <Package className="h-4 w-4" />,
             render: null,
           },
           {
-            title: "Avg Order Value",
+            title: t("dashboard:kpis.avgOrderValue"),
             value: parseNum(overview?.avg_order_value),
             icon: <Wallet className="h-4 w-4" />,
             render: () => (
@@ -200,13 +202,13 @@ export function DashboardPage() {
             ),
           },
           {
-            title: "Inventory Records",
+            title: t("dashboard:kpis.inventoryRecords"),
             value: inventoryPage?.total,
             icon: <Boxes className="h-4 w-4" />,
             render: null,
           },
           {
-            title: "Low Stock Alerts",
+            title: t("dashboard:kpis.lowStockAlerts"),
             value: lowStock?.length,
             icon: <Activity className="h-4 w-4" />,
             render: null,
@@ -234,13 +236,13 @@ export function DashboardPage() {
           <Skeleton className="h-[340px] rounded-xl" />
         ) : (
           <LineChartCard
-            title="Monthly Sales Trend"
-            description="Revenue and profit across the last 12 months"
+            title={t("dashboard:charts.monthlySalesTrend")}
+            description={t("dashboard:descriptions.monthlySalesTrend")}
             data={monthlyData}
             xKey="name"
             series={[
-              { key: "revenue", name: "Revenue" },
-              { key: "profit", name: "Profit", color: "hsl(var(--chart-3))" },
+              { key: "revenue", name: t("dashboard:labels.revenue") },
+              { key: "profit", name: t("dashboard:labels.profit"), color: "hsl(var(--chart-3))" },
             ]}
             height={340}
           />
@@ -250,13 +252,13 @@ export function DashboardPage() {
           <Skeleton className="h-[340px] rounded-xl" />
         ) : (
           <BarChartCard
-            title="Yearly Comparison"
-            description="Revenue vs COGS by year"
+            title={t("dashboard:charts.yearlyComparison")}
+            description={t("dashboard:descriptions.yearlyComparison")}
             data={yearlyData}
             xKey="name"
             series={[
-              { key: "revenue", name: "Revenue" },
-              { key: "cogs", name: "COGS", color: "hsl(var(--chart-2))" },
+              { key: "revenue", name: t("dashboard:labels.revenue") },
+              { key: "cogs", name: t("dashboard:labels.cogs"), color: "hsl(var(--chart-2))" },
             ]}
             height={340}
           />
@@ -264,13 +266,13 @@ export function DashboardPage() {
 
         {monthlyData.length > 0 ? (
           <AreaChartCard
-            title="Revenue Trend"
-            description="Cumulative revenue performance"
+            title={t("dashboard:sections.revenueTrend")}
+            description={t("dashboard:descriptions.revenueTrend")}
             data={monthlyData}
             xKey="name"
             series={[
-              { key: "revenue", name: "Revenue" },
-              { key: "profit", name: "Profit", color: "hsl(var(--chart-3))" },
+              { key: "revenue", name: t("dashboard:labels.revenue") },
+              { key: "profit", name: t("dashboard:labels.profit"), color: "hsl(var(--chart-3))" },
             ]}
             height={340}
           />
@@ -280,8 +282,8 @@ export function DashboardPage() {
 
         {categoryData.length > 0 ? (
           <DonutChartCard
-            title="Revenue by Product"
-            description="Top selling products by revenue"
+            title={t("dashboard:charts.revenueByProduct")}
+            description={t("dashboard:descriptions.revenueByProduct")}
             data={categoryData}
             height={340}
           />
@@ -294,11 +296,11 @@ export function DashboardPage() {
         <Card className="glass-card">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle>Top Products</CardTitle>
-              <CardDescription>Best sellers by revenue</CardDescription>
+              <CardTitle>{t("dashboard:sections.topProducts")}</CardTitle>
+              <CardDescription>{t("dashboard:descriptions.topProducts")}</CardDescription>
             </div>
             <Link to="/products" className="text-sm font-medium text-primary hover:underline">
-              View all
+              {t("actions.viewAll")}
             </Link>
           </CardHeader>
           <CardContent>
@@ -309,7 +311,7 @@ export function DashboardPage() {
                 ))}
               </div>
             ) : topSellers.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No sales yet.</p>
+              <p className="text-sm text-muted-foreground">{t("dashboard:labels.noSalesYet")}</p>
             ) : (
               <div className="space-y-3">
                 {topSellers.map((item, index) => (
@@ -323,7 +325,9 @@ export function DashboardPage() {
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-semibold">{formatCurrency(item.revenue)}</p>
-                      <p className="text-xs text-muted-foreground">{item.units_sold} units</p>
+                      <p className="text-xs text-muted-foreground">
+                        {t("dashboard:labels.units", { count: item.units_sold })}
+                      </p>
                     </div>
                   </div>
                 ))}
@@ -335,11 +339,11 @@ export function DashboardPage() {
         <Card className="glass-card">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle>Top Customers</CardTitle>
-              <CardDescription>Highest spenders</CardDescription>
+              <CardTitle>{t("dashboard:sections.topCustomers")}</CardTitle>
+              <CardDescription>{t("dashboard:descriptions.topCustomers")}</CardDescription>
             </div>
             <Link to="/customers" className="text-sm font-medium text-primary hover:underline">
-              View all
+              {t("actions.viewAll")}
             </Link>
           </CardHeader>
           <CardContent>
@@ -350,7 +354,7 @@ export function DashboardPage() {
                 ))}
               </div>
             ) : topCustomers.rows.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No customers yet.</p>
+              <p className="text-sm text-muted-foreground">{t("dashboard:labels.noCustomersYet")}</p>
             ) : (
               <div className="space-y-3">
                 {topCustomers.rows.map((item) => (
@@ -358,7 +362,7 @@ export function DashboardPage() {
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium">{item.customer_name}</p>
                       <p className="text-xs text-muted-foreground">
-                        {item.total_orders} orders · {formatDate(item.last_order_date)}
+                        {t("dashboard:labels.ordersCount", { count: item.total_orders })} · {formatDate(item.last_order_date)}
                       </p>
                     </div>
                     <p className="text-sm font-semibold">{formatCurrency(item.total_spent)}</p>
@@ -374,11 +378,11 @@ export function DashboardPage() {
         <Card className="glass-card">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle>Recent Orders</CardTitle>
-              <CardDescription>Latest transactions</CardDescription>
+              <CardTitle>{t("dashboard:sections.recentOrders")}</CardTitle>
+              <CardDescription>{t("dashboard:descriptions.recentOrders")}</CardDescription>
             </div>
             <Link to="/orders" className="text-sm font-medium text-primary hover:underline">
-              View all
+              {t("actions.viewAll")}
             </Link>
           </CardHeader>
           <CardContent>
@@ -389,7 +393,7 @@ export function DashboardPage() {
                 ))}
               </div>
             ) : recentOrders.items.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No orders yet.</p>
+              <p className="text-sm text-muted-foreground">{t("dashboard:labels.noOrdersYet")}</p>
             ) : (
               <div className="divide-y">
                 {recentOrders.items.map((order) => (
@@ -417,11 +421,11 @@ export function DashboardPage() {
           <Card className="glass-card">
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
-                <CardTitle>Recent Activity</CardTitle>
-                <CardDescription>Latest actions across the system</CardDescription>
+                <CardTitle>{t("dashboard:sections.recentActivity")}</CardTitle>
+                <CardDescription>{t("dashboard:descriptions.recentActivity")}</CardDescription>
               </div>
               <Link to="/activity-logs" className="text-sm font-medium text-primary hover:underline">
-                View all
+                {t("actions.viewAll")}
               </Link>
             </CardHeader>
             <CardContent>
@@ -432,7 +436,7 @@ export function DashboardPage() {
                   ))}
                 </div>
               ) : activityLogs.items.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No activity yet.</p>
+                <p className="text-sm text-muted-foreground">{t("dashboard:labels.noActivityYet")}</p>
               ) : (
                 <div className="divide-y">
                   {activityLogs.items.map((log) => (
@@ -456,14 +460,14 @@ export function DashboardPage() {
         ) : (
           <Card className="glass-card">
             <CardHeader>
-              <CardTitle>Quick Insights</CardTitle>
-              <CardDescription>Your business at a glance</CardDescription>
+              <CardTitle>{t("dashboard:sections.quickInsights")}</CardTitle>
+              <CardDescription>{t("dashboard:descriptions.quickInsights")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               {[
-                { label: "Gross profit margin", value: revenue ? ((profit / revenue) * 100).toFixed(1) + "%" : "—" },
-                { label: "Avg order value", value: formatCurrency(overview?.avg_order_value) },
-                { label: "Inventory records", value: inventoryPage?.total ?? "—" },
+                { label: t("dashboard:labels.grossProfitMargin"), value: revenue ? ((profit / revenue) * 100).toFixed(1) + "%" : "—" },
+                { label: t("dashboard:kpis.avgOrderValue"), value: formatCurrency(overview?.avg_order_value) },
+                { label: t("dashboard:kpis.inventoryRecords"), value: inventoryPage?.total ?? "—" },
               ].map((insight) => (
                 <div
                   key={insight.label}

@@ -1,0 +1,41 @@
+{
+  "title": "الملف الشخصي",
+  "description": "إدارة معلوماتك الشخصية وإعدادات حسابك.",
+  "personalInfo": "المعلومات الشخصية",
+  "security": "الأمان",
+  "account": "إعدادات الحساب",
+  "accountTitle": "الحساب",
+  "accountDescription": "معلومات حسابك.",
+  "lastLogin": "آخر تسجيل دخول",
+  "superuserBadge": "مستخدم فائق — وصول كامل للمنصة",
+  "signOut": "تسجيل الخروج",
+  "changePasswordDescription": "حدّث كلمة المرور الخاصة بحسابك.",
+  "fields": {
+    "fullName": "الاسم الكامل",
+    "email": "البريد الإلكتروني",
+    "phone": "الهاتف",
+    "username": "اسم المستخدم",
+    "role": "الدور",
+    "avatar": "الصورة الرمزية",
+    "bio": "نبذة",
+    "currentPassword": "كلمة المرور الحالية",
+    "newPassword": "كلمة المرور الجديدة",
+    "confirmNewPassword": "تأكيد كلمة المرور الجديدة"
+  },
+  "actions": {
+    "updateProfile": "تحديث الملف الشخصي",
+    "changePassword": "تغيير كلمة المرور",
+    "updatePassword": "تحديث كلمة المرور",
+    "saving": "جارٍ الحفظ…",
+    "cancel": "إلغاء"
+  },
+  "toasts": {
+    "profileUpdated": "تم تحديث الملف الشخصي بنجاح.",
+    "passwordUpdated": "تم تحديث كلمة المرور بنجاح.",
+    "profileFailed": "تعذر تحديث ملفك الشخصي.",
+    "passwordFailed": "تعذر تحديث كلمة المرور.",
+    "passwordMismatch": "كلمتا المرور الجديدتان غير متطابقتين."
+  },
+  "memberSince": "عضو منذ {{date}}",
+  "roleBadge": "{{role}}"
+}

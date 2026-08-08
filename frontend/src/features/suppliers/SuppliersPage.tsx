@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Building2, Globe, Mail, PenLine, Phone, Plus, Trash2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { DataPagination } from "@/components/common/DataPagination";
@@ -17,7 +18,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { SupplierDialog } from "@/features/suppliers/SupplierDialog";
 import { suppliersApi } from "@/features/suppliers/api";
-import { ApiClientError } from "@/lib/api";
+import { getErrorMessage } from "@/lib/error-messages";
 import { cn, formatDateShort } from "@/lib/utils";
 import type { Supplier } from "@/types";
 
@@ -25,6 +26,7 @@ const PAGE_SIZE = 10;
 
 export function SuppliersPage() {
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
@@ -54,30 +56,27 @@ export function SuppliersPage() {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => suppliersApi.remove(id),
     onSuccess: () => {
-      toast({ title: "Supplier deleted", variant: "success" });
+      toast({ title: t("suppliers:deletedToast"), variant: "success" });
       setDeleting(null);
     },
     onError: (error: unknown) => {
       toast({
-        title: "Could not delete supplier",
-        description: error instanceof ApiClientError ? error.message : "Unexpected error",
+        title: t("suppliers:deleteFailedToast"),
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     },
   });
 
   if (isError) {
-    return <ErrorState message="Could not load suppliers." onRetry={() => void refetch()} />;
+    return <ErrorState message={t("suppliers:loadFailed")} onRetry={() => void refetch()} />;
   }
 
   const suppliers = data?.items ?? [];
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Suppliers"
-        description="Manage your suppliers and their contact information."
-      >
+      <PageHeader title={t("suppliers:title")} description={t("suppliers:description")}>
         <Button
           onClick={() => {
             setEditing(null);
@@ -85,7 +84,7 @@ export function SuppliersPage() {
           }}
         >
           <Plus className="h-4 w-4" />
-          New supplier
+          {t("suppliers:add")}
         </Button>
       </PageHeader>
 
@@ -93,12 +92,12 @@ export function SuppliersPage() {
         <input
           value={search}
           onChange={(event) => setSearch(event.target.value)}
-          placeholder="Search suppliers…"
-          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pl-9 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          placeholder={t("suppliers:searchPlaceholder")}
+          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 ps-9 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
         />
         <svg
           viewBox="0 0 24 24"
-          className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+          className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
           fill="none"
           stroke="currentColor"
           strokeWidth="2"
@@ -118,20 +117,20 @@ export function SuppliersPage() {
         ) : suppliers.length === 0 ? (
           <div className="p-12 text-center">
             <Building2 className="mx-auto h-10 w-10 text-muted-foreground" />
-            <p className="mt-3 font-medium">No suppliers found</p>
-            <p className="text-sm text-muted-foreground">Try adjusting your search or filters.</p>
+            <p className="mt-3 font-medium">{t("suppliers:emptyTitle")}</p>
+            <p className="text-sm text-muted-foreground">{t("suppliers:emptyDescription")}</p>
           </div>
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b bg-muted/40 text-left text-xs text-muted-foreground">
-                <th className="px-4 py-3 font-medium">Supplier</th>
-                <th className="px-4 py-3 font-medium">Contact</th>
-                <th className="px-4 py-3 font-medium">Location</th>
-                <th className="px-4 py-3 font-medium">Tax ID</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium">Created</th>
-                <th className="px-4 py-3 text-right font-medium">Actions</th>
+              <tr className="border-b bg-muted/40 text-start text-xs text-muted-foreground">
+                <th className="px-4 py-3 font-medium">{t("suppliers:table.supplier")}</th>
+                <th className="px-4 py-3 font-medium">{t("suppliers:table.contact")}</th>
+                <th className="px-4 py-3 font-medium">{t("suppliers:table.location")}</th>
+                <th className="px-4 py-3 font-medium">{t("suppliers:table.taxId")}</th>
+                <th className="px-4 py-3 font-medium">{t("suppliers:table.status")}</th>
+                <th className="px-4 py-3 font-medium">{t("suppliers:table.created")}</th>
+                <th className="px-4 py-3 text-end font-medium">{t("suppliers:table.actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -180,17 +179,17 @@ export function SuppliersPage() {
                   </td>
                   <td className="px-4 py-3">
                     <Badge variant={supplier.is_active ? "success" : "secondary"}>
-                      {supplier.is_active ? "Active" : "Inactive"}
+                      {supplier.is_active ? t("statuses.active") : t("statuses.inactive")}
                     </Badge>
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">
                     {formatDateShort(supplier.created_at)}
                   </td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-4 py-3 text-end">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <span className="sr-only">Actions</span>
+                          <span className="sr-only">{t("suppliers:table.actions")}</span>
                           <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
                             <circle cx="12" cy="5" r="1.5" />
                             <circle cx="12" cy="12" r="1.5" />
@@ -206,14 +205,14 @@ export function SuppliersPage() {
                           }}
                         >
                           <PenLine />
-                          Edit
+                          {t("actions.edit")}
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => setDeleting(supplier)}
                           className="text-destructive focus:text-destructive"
                         >
                           <Trash2 />
-                          Delete
+                          {t("actions.delete")}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -241,9 +240,9 @@ export function SuppliersPage() {
           if (!open) setDeleting(null);
         }}
         onConfirm={() => (deleting ? deleteMutation.mutateAsync(deleting.id) : Promise.resolve())}
-        title="Delete supplier"
-        description={deleting ? `Are you sure you want to delete "${deleting.name}"?` : undefined}
-        confirmLabel="Delete"
+        title={t("suppliers:deleteConfirmTitle")}
+        description={deleting ? t("suppliers:deleteConfirmDescription", { name: deleting.name }) : undefined}
+        confirmLabel={t("actions.delete")}
       />
     </div>
   );

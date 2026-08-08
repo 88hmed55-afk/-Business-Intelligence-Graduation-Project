@@ -1,0 +1,35 @@
+{
+  "title": "الإشعارات",
+  "description": "ابقَ على اطلاع بالتنبيهات والنشاط عبر أعمالك.",
+  "markAllRead": "تحديد الكل كمقروء",
+  "emptyTitle": "لا توجد إشعارات",
+  "emptyDescription": "لا توجد إشعارات جديدة.",
+  "loadFailed": "تعذر تحميل الإشعارات.",
+  "readToast": "تم تحديد الإشعار كمقروء.",
+  "readAllToast": "تم تحديد جميع الإشعارات كمقروءة.",
+  "markReadFailed": "تعذر تحديث الإشعارات.",
+  "updateFailed": "تعذر تحديث الإشعار",
+  "unreadCount": "{{count}} غير مقروء",
+  "types": {
+    "info": "معلومة",
+    "success": "نجاح",
+    "warning": "تحذير",
+    "error": "خطأ"
+  },
+  "table": {
+    "notification": "الإشعار",
+    "type": "النوع",
+    "date": "التاريخ",
+    "status": "الحالة"
+  },
+  "statuses": {
+    "read": "مقروء",
+    "unread": "غير مقروء"
+  },
+  "time": {
+    "justNow": "الآن",
+    "minutesAgo": "قبل {{count}} دقيقة",
+    "hoursAgo": "قبل {{count}} ساعة",
+    "daysAgo": "قبل {{count}} يوم"
+  }
+}

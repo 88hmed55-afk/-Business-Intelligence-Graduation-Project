@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Boxes, Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -19,30 +20,32 @@ import { FormInput, FormSelect, FormTextarea } from "@/components/forms";
 import { categoriesApi } from "@/features/categories/api";
 import { productsApi, type ProductCreatePayload, type ProductUpdatePayload } from "@/features/products/api";
 import { suppliersApi } from "@/features/suppliers/api";
-import { ApiClientError, fetchAllPages } from "@/lib/api";
+import i18n from "@/i18n";
+import { fetchAllPages } from "@/lib/api";
+import { getErrorMessage } from "@/lib/error-messages";
 import type { Product } from "@/types";
 
 const NONE = "__none__";
 
 const schema = z.object({
-  name: z.string().min(1, "Name is required").max(300),
-  sku: z.string().min(1, "SKU is required").max(64),
+  name: z.string().min(1, { error: () => i18n.t("validation.required") }).max(300),
+  sku: z.string().min(1, { error: () => i18n.t("validation.required") }).max(64),
   barcode: z.string().max(64).optional().or(z.literal("")),
   description: z.string().max(2000).optional().or(z.literal("")),
   category_id: z.string().optional().or(z.literal("")),
   supplier_id: z.string().optional().or(z.literal("")),
   unit_price: z
     .string()
-    .refine((value) => value === "" || !Number.isNaN(Number(value)), "Must be a number"),
+    .refine((value) => value === "" || !Number.isNaN(Number(value)), { error: () => i18n.t("validation.invalidNumber") }),
   cost_price: z
     .string()
-    .refine((value) => value === "" || !Number.isNaN(Number(value)), "Must be a number"),
+    .refine((value) => value === "" || !Number.isNaN(Number(value)), { error: () => i18n.t("validation.invalidNumber") }),
   reorder_level: z
     .string()
-    .refine((value) => value === "" || !Number.isNaN(Number(value)), "Must be a number"),
+    .refine((value) => value === "" || !Number.isNaN(Number(value)), { error: () => i18n.t("validation.invalidNumber") }),
   weight_kg: z
     .string()
-    .refine((value) => value === "" || !Number.isNaN(Number(value)), "Must be a number"),
+    .refine((value) => value === "" || !Number.isNaN(Number(value)), { error: () => i18n.t("validation.invalidNumber") }),
   is_active: z.string(),
 });
 
@@ -56,6 +59,7 @@ interface ProductDialogProps {
 
 export function ProductDialog({ open, onOpenChange, product }: ProductDialogProps) {
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const { data: categoriesData } = useQuery({
     queryKey: ["categories"],
@@ -108,13 +112,13 @@ export function ProductDialog({ open, onOpenChange, product }: ProductDialogProp
   const createMutation = useMutation({
     mutationFn: (payload: ProductCreatePayload) => productsApi.create(payload),
     onSuccess: () => {
-      toast({ title: "Product created", variant: "success" });
+      toast({ title: t("products:createdToast"), variant: "success" });
       onOpenChange(false);
     },
     onError: (error: unknown) => {
       toast({
-        title: "Could not create product",
-        description: error instanceof ApiClientError ? error.message : "Unexpected error",
+        title: t("products:createFailedToast"),
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     },
@@ -124,13 +128,13 @@ export function ProductDialog({ open, onOpenChange, product }: ProductDialogProp
     mutationFn: ({ id, payload }: { id: string; payload: ProductUpdatePayload }) =>
       productsApi.update(id, payload),
     onSuccess: () => {
-      toast({ title: "Product updated", variant: "success" });
+      toast({ title: t("products:updatedToast"), variant: "success" });
       onOpenChange(false);
     },
     onError: (error: unknown) => {
       toast({
-        title: "Could not update product",
-        description: error instanceof ApiClientError ? error.message : "Unexpected error",
+        title: t("products:updateFailedToast"),
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     },
@@ -162,11 +166,11 @@ export function ProductDialog({ open, onOpenChange, product }: ProductDialogProp
   };
 
   const categoryOptions = [
-    { value: NONE, label: "No category" },
+    { value: NONE, label: t("products:noCategory") },
     ...categories.map((category) => ({ value: category.id, label: category.name })),
   ];
   const supplierOptions = [
-    { value: NONE, label: "No supplier" },
+    { value: NONE, label: t("products:noSupplier") },
     ...suppliers.map((supplier) => ({ value: supplier.id, label: supplier.name })),
   ];
 
@@ -176,15 +180,15 @@ export function ProductDialog({ open, onOpenChange, product }: ProductDialogProp
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Boxes className="h-5 w-5 text-primary" />
-            {product ? "Edit product" : "Create product"}
+            {product ? t("products:edit") : t("products:create")}
           </DialogTitle>
           <DialogDescription>
-            {product ? "Update this product's details." : "Add a new product to your catalog."}
+            {product ? t("products:editDescription") : t("products:createDescription")}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormInput
-            label="Name"
+            label={t("products:fields.name")}
             required
             value={form.watch("name")}
             onChange={(v) => form.setValue("name", v, { shouldValidate: true })}
@@ -192,43 +196,43 @@ export function ProductDialog({ open, onOpenChange, product }: ProductDialogProp
           />
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormInput
-              label="SKU"
+              label={t("products:fields.sku")}
               required
               value={form.watch("sku")}
               onChange={(v) => form.setValue("sku", v, { shouldValidate: true })}
               error={form.formState.errors.sku?.message}
             />
             <FormInput
-              label="Barcode"
+              label={t("products:fields.barcode")}
               value={form.watch("barcode")}
               onChange={(v) => form.setValue("barcode", v)}
             />
           </div>
           <FormTextarea
-            label="Description"
+            label={t("products:fields.description")}
             rows={3}
             value={form.watch("description")}
             onChange={(v) => form.setValue("description", v)}
           />
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormSelect
-              label="Category"
+              label={t("products:fields.category")}
               control={form.control}
               name="category_id"
               options={categoryOptions}
-              placeholder="Select category…"
+              placeholder={t("products:selectCategoryPlaceholder")}
             />
             <FormSelect
-              label="Supplier"
+              label={t("products:fields.supplier")}
               control={form.control}
               name="supplier_id"
               options={supplierOptions}
-              placeholder="Select supplier…"
+              placeholder={t("products:selectSupplierPlaceholder")}
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <FormInput
-              label="Unit price"
+              label={t("products:fields.unitPrice")}
               type="number"
               min={0}
               step="0.01"
@@ -237,7 +241,7 @@ export function ProductDialog({ open, onOpenChange, product }: ProductDialogProp
               error={form.formState.errors.unit_price?.message}
             />
             <FormInput
-              label="Cost price"
+              label={t("products:fields.costPrice")}
               type="number"
               min={0}
               step="0.01"
@@ -248,7 +252,7 @@ export function ProductDialog({ open, onOpenChange, product }: ProductDialogProp
           </div>
           <div className="grid grid-cols-2 gap-4">
             <FormInput
-              label="Reorder level"
+              label={t("products:fields.reorderLevel")}
               type="number"
               min={0}
               value={form.watch("reorder_level")}
@@ -256,7 +260,7 @@ export function ProductDialog({ open, onOpenChange, product }: ProductDialogProp
               error={form.formState.errors.reorder_level?.message}
             />
             <FormInput
-              label="Weight (kg)"
+              label={t("products:fields.weightKg")}
               type="number"
               min={0}
               step="0.01"
@@ -266,21 +270,21 @@ export function ProductDialog({ open, onOpenChange, product }: ProductDialogProp
             />
           </div>
           <FormSelect
-            label="Status"
+            label={t("products:fields.status")}
             control={form.control}
             name="is_active"
             options={[
-              { value: "true", label: "Active" },
-              { value: "false", label: "Inactive" },
+              { value: "true", label: t("statuses.active") },
+              { value: "false", label: t("statuses.inactive") },
             ]}
           />
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
-              Cancel
+              {t("actions.cancel")}
             </Button>
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-              {product ? "Save changes" : "Create product"}
+              {product ? t("actions.save") : t("products:create")}
             </Button>
           </DialogFooter>
         </form>

@@ -1,16 +1,18 @@
 import { AlertTriangle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { isRouteErrorResponse, useRouteError } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 
 export function RouteError() {
   const error = useRouteError();
+  const { t } = useTranslation();
 
   const message = isRouteErrorResponse(error)
     ? `${error.status} ${error.statusText}`
     : error instanceof Error
       ? error.message
-      : "An unexpected error occurred.";
+      : t("auth:routeError.unexpected");
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background p-4 text-center">
@@ -18,10 +20,10 @@ export function RouteError() {
         <AlertTriangle className="h-6 w-6" />
       </div>
       <div className="space-y-1">
-        <h1 className="text-lg font-bold">Something went wrong</h1>
+        <h1 className="text-lg font-bold">{t("auth:routeError.title")}</h1>
         <p className="max-w-sm text-sm text-muted-foreground">{message}</p>
       </div>
-      <Button onClick={() => window.location.assign("/")}>Back to overview</Button>
+      <Button onClick={() => window.location.assign("/")}>{t("auth:routeError.backHome")}</Button>
     </div>
   );
 }

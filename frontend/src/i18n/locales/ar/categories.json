@@ -1,0 +1,43 @@
+{
+  "title": "الفئات",
+  "description": "تنظيم المنتجات في فئات لسهولة الإدارة.",
+  "editDescription": "تحديث تفاصيل هذه الفئة.",
+  "createDescription": "إضافة فئة جديدة لتنظيم المنتجات.",
+  "add": "فئة جديدة",
+  "create": "إضافة فئة",
+  "edit": "تعديل الفئة",
+  "delete": "حذف الفئة",
+  "deleteConfirmTitle": "حذف الفئة",
+  "deleteConfirmDescription": "هل أنت متأكد من حذف \"{{name}}\"؟ قد تتأثر المنتجات في هذه الفئة.",
+  "fields": {
+    "name": "اسم الفئة",
+    "namePlaceholder": "مثال: إلكترونيات",
+    "slug": "المعرّف (Slug)",
+    "parent": "الفئة الأم",
+    "description": "الوصف",
+    "status": "الحالة",
+    "sortOrder": "ترتيب العرض"
+  },
+  "table": {
+    "category": "الفئة",
+    "parent": "الفئة الأم",
+    "slug": "المعرّف (Slug)",
+    "sortOrder": "ترتيب العرض",
+    "created": "تاريخ الإنشاء",
+    "products": "المنتجات",
+    "status": "الحالة",
+    "actions": "إجراءات"
+  },
+  "emptyTitle": "لا توجد فئات",
+  "emptyDescription": "جرّب تعديل البحث أو التصفية.",
+  "searchPlaceholder": "بحث عن الفئات…",
+  "none": "لا يوجد",
+  "parentPlaceholder": "بدون (المستوى الأعلى)",
+  "createdToast": "تم إنشاء الفئة بنجاح.",
+  "updatedToast": "تم تحديث الفئة بنجاح.",
+  "deletedToast": "تم حذف الفئة بنجاح.",
+  "deleteFailedToast": "تعذر حذف الفئة",
+  "createFailedToast": "تعذر إنشاء الفئة",
+  "updateFailedToast": "تعذر تحديث الفئة",
+  "loadFailed": "تعذر تحميل الفئات."
+}

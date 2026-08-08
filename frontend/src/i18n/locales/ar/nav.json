@@ -1,0 +1,84 @@
+{
+  "sections": {
+    "overview": "نظرة عامة",
+    "businessIntelligence": "الذكاء التجاري",
+    "commerce": "التجارة",
+    "organization": "المؤسسة",
+    "platform": "المنصة"
+  },
+  "items": {
+    "executiveDashboard": "لوحة القيادة التنفيذية",
+    "dashboard": "لوحة القيادة",
+    "analytics": "التحليلات",
+    "forecasting": "التنبؤ",
+    "insights": "الرؤى والتصنيفات",
+    "trends": "الاتجاهات والتحليلات",
+    "reports": "التقارير",
+    "businessReports": "التقارير التجارية",
+    "customers": "العملاء",
+    "products": "المنتجات",
+    "categories": "الفئات",
+    "suppliers": "الموردون",
+    "inventory": "المخزون",
+    "orders": "الطلبات",
+    "payments": "المدفوعات",
+    "employees": "الموظفون",
+    "rolesPermissions": "الأدوار والصلاحيات",
+    "activityLogs": "سجلات النشاط",
+    "notifications": "الإشعارات",
+    "settings": "الإعدادات",
+    "profile": "الملف الشخصي",
+    "users": "المستخدمون",
+    "kpis": "مؤشرات الأداء",
+    "dashboards": "لوحات القيادة"
+  },
+  "collapse": "طي القائمة",
+  "expand": "توسيع القائمة",
+  "sidebar": "الشريط الجانبي",
+  "openMenu": "فتح القائمة",
+  "breadcrumb": "مسار التنقل",
+  "actions": {
+    "logout": "تسجيل الخروج",
+    "reloadView": "إعادة تحميل الصفحة",
+    "deleteSelected": "حذف المحدد",
+    "selected": "{{count}} محدد"
+  },
+  "footer": {
+    "copyright": "© {{year}} Nova BI · نظام إدارة الذكاء التجاري",
+    "operational": "جميع الأنظمة تعمل بشكل طبيعي"
+  },
+  "theme": {
+    "toggleTheme": "تبديل المظهر",
+    "light": "فاتح",
+    "dark": "داكن",
+    "system": "النظام"
+  },
+  "logo": {
+    "tagline": "الذكاء"
+  },
+  "states": {
+    "contentLoadError": "حدث خطأ ما أثناء تحميل هذا المحتوى.",
+    "renderError": "حدث خطأ غير متوقع أثناء عرض هذه الصفحة."
+  },
+  "stats": {
+    "vsLastPeriod": "مقارنة بالفترة السابقة"
+  },
+  "dates": {
+    "today": "اليوم",
+    "yesterday": "أمس",
+    "7d": "آخر 7 أيام",
+    "30d": "آخر 30 يومًا",
+    "90d": "آخر 90 يومًا",
+    "this_month": "هذا الشهر",
+    "last_month": "الشهر الماضي",
+    "this_quarter": "هذا الربع",
+    "last_quarter": "الربع الماضي",
+    "this_year": "هذه السنة",
+    "last_year": "السنة الماضية",
+    "all": "كل الفترات",
+    "custom": "مخصص"
+  },
+  "forms": {
+    "selectPlaceholder": "اختر…"
+  }
+}

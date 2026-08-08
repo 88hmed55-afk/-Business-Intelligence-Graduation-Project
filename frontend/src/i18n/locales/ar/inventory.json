@@ -1,0 +1,80 @@
+{
+  "title": "المخزون",
+  "description": "مراقبة مستويات المخزون وإدارة تسويات المخزون.",
+  "adjust": "تسوية المخزون",
+  "adjustmentTitle": "تسوية المخزون",
+  "adjustmentDescription": "سجّل حركة مخزون لهذا المنتج.",
+  "fields": {
+    "product": "المنتج",
+    "quantity": "الكمية",
+    "quantityDelta": "تغيير الكمية",
+    "quantityDeltaPlaceholder": "مثال: 10 أو -5",
+    "movementType": "نوع الحركة",
+    "reason": "السبب",
+    "reference": "المرجع",
+    "referencePlaceholder": "رقم أمر شراء، رقم فاتورة…",
+    "notes": "ملاحظات",
+    "date": "التاريخ"
+  },
+  "movementTypes": {
+    "in": "إدخال للمخزون",
+    "out": "إخراج من المخزون",
+    "adjustment": "تسوية",
+    "sale": "بيع",
+    "purchase": "شراء",
+    "return": "إرجاع",
+    "damage": "تلف",
+    "correction": "تصحيح",
+    "received": "مستلم",
+    "shipped": "تم الشحن",
+    "adjusted": "تمت التسوية",
+    "returned": "مُعاد",
+    "reserved": "محجوز",
+    "released": "مُحرر"
+  },
+  "table": {
+    "product": "المنتج",
+    "sku": "رمز التخزين",
+    "inStock": "في المخزون",
+    "reserved": "محجوز",
+    "available": "متاح",
+    "reorderLevel": "حد إعادة الطلب",
+    "stockValue": "قيمة المخزون",
+    "status": "الحالة",
+    "actions": "إجراءات",
+    "warehouse": "المستودع",
+    "location": "الموقع",
+    "lastRestocked": "آخر إعادة تزويد"
+  },
+  "status": {
+    "inStock": "متوفر",
+    "lowStock": "مخزون منخفض",
+    "outOfStock": "نفذت الكمية"
+  },
+  "stats": {
+    "stockOnHand": "المخزون الحالي",
+    "lowStockItems": "عناصر المخزون المنخفض",
+    "warehouses": "المستودعات",
+    "stockRecords": "سجلات المخزون"
+  },
+  "tabs": {
+    "stock": "المخزون",
+    "movements": "الحركات"
+  },
+  "unknownProduct": "منتج غير معروف",
+  "movementsTitle": "سجل الحركات",
+  "movementsTable": {
+    "change": "التغيير",
+    "movedAt": "وقت الحركة"
+  },
+  "emptyStockTitle": "لا توجد سجلات مخزون",
+  "emptyStockDescription": "أضف منتجات لبدء تتبع المخزون.",
+  "emptyMovementsTitle": "لا توجد حركات مسجلة",
+  "emptyMovementsDescription": "ستظهر تسويات المخزون هنا.",
+  "emptyTitle": "لا توجد سجلات مخزون",
+  "emptyDescription": "جرّب تعديل البحث أو التصفية.",
+  "searchPlaceholder": "بحث في المخزون…",
+  "adjustSuccess": "تم تعديل المخزون بنجاح.",
+  "adjustFailed": "تعذر تعديل المخزون.",
+  "loadFailed": "تعذر تحميل المخزون."
+}

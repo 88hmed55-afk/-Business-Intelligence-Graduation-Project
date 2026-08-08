@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { PenLine, Plus, Search, Trash2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { DataPagination } from "@/components/common/DataPagination";
@@ -29,7 +30,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { UserDialog } from "@/features/users/UserDialog";
 import { usersApi } from "@/features/users/api";
-import { ApiClientError } from "@/lib/api";
+import { getErrorMessage } from "@/lib/error-messages";
 import { cn, formatDateShort, initials, toTitleCase } from "@/lib/utils";
 import type { User, UserRole } from "@/types";
 
@@ -42,6 +43,7 @@ const roleVariant: Record<UserRole, "default" | "secondary" | "outline"> = {
 };
 
 export function UsersPage() {
+  const { t } = useTranslation();
   const { toast } = useToast();
 
   const [page, setPage] = useState(1);
@@ -73,12 +75,12 @@ export function UsersPage() {
     mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) =>
       usersApi.update(id, { is_active: isActive }),
     onSuccess: () => {
-      toast({ title: "User status updated", variant: "success" });
+      toast({ title: t("users:statusUpdatedToast"), variant: "success" });
     },
     onError: (error: unknown) => {
       toast({
-        title: "Could not update user",
-        description: error instanceof ApiClientError ? error.message : "Unexpected error",
+        title: t("users:updateFailedToast"),
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     },
@@ -87,25 +89,25 @@ export function UsersPage() {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => usersApi.remove(id),
     onSuccess: () => {
-      toast({ title: "User deleted", variant: "success" });
+      toast({ title: t("users:deletedToast"), variant: "success" });
       setDeleting(null);
     },
     onError: (error: unknown) => {
       toast({
-        title: "Could not delete user",
-        description: error instanceof ApiClientError ? error.message : "Unexpected error",
+        title: t("users:deleteFailedToast"),
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     },
   });
 
   if (isError) {
-    return <ErrorState message="Could not load users." onRetry={() => void refetch()} />;
+    return <ErrorState message={t("users:loadFailed")} onRetry={() => void refetch()} />;
   }
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Users" description="Manage user accounts and permissions">
+      <PageHeader title={t("users:title")} description={t("users:description")}>
         <Button
           onClick={() => {
             setEditing(null);
@@ -113,15 +115,15 @@ export function UsersPage() {
           }}
         >
           <Plus className="h-4 w-4" />
-          New user
+          {t("users:add")}
         </Button>
       </PageHeader>
 
       <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          className="pl-9"
-          placeholder="Search users…"
+          className="ps-9"
+          placeholder={t("users:searchPlaceholder")}
           value={search}
           onChange={(event) => setSearch(event.target.value)}
         />
@@ -135,20 +137,20 @@ export function UsersPage() {
         </div>
       ) : (data?.items.length ?? 0) === 0 ? (
         <EmptyState
-          title="No users found"
-          description="Create a user account to grant access to the platform."
+          title={t("users:emptyTitle")}
+          description={t("users:emptyDescription")}
         />
       ) : (
         <div className="rounded-xl border">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>User</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Last login</TableHead>
-                <TableHead>Joined</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>{t("users:table.user")}</TableHead>
+                <TableHead>{t("users:table.role")}</TableHead>
+                <TableHead>{t("users:table.status")}</TableHead>
+                <TableHead>{t("users:table.lastLogin")}</TableHead>
+                <TableHead>{t("users:table.created")}</TableHead>
+                <TableHead className="text-end">{t("users:table.actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -166,29 +168,31 @@ export function UsersPage() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge variant={roleVariant[user.role]}>{toTitleCase(user.role)}</Badge>
+                    <Badge variant={roleVariant[user.role]}>
+                      {t("users:roles." + user.role, { defaultValue: toTitleCase(user.role) })}
+                    </Badge>
                     {user.is_superuser && (
-                      <Badge variant="warning" className="ml-1">
-                        Super
+                      <Badge variant="warning" className="ms-1">
+                        {t("users:super")}
                       </Badge>
                     )}
                   </TableCell>
                   <TableCell>
                     <Badge variant={user.is_active ? "success" : "destructive"}>
-                      {user.is_active ? "Active" : "Inactive"}
+                      {user.is_active ? t("users:statuses.active") : t("users:statuses.inactive")}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-muted-foreground">
-                    {user.last_login_at ? formatDateShort(user.last_login_at) : "Never"}
+                    {user.last_login_at ? formatDateShort(user.last_login_at) : t("users:never")}
                   </TableCell>
                   <TableCell className="text-muted-foreground">
                     {formatDateShort(user.created_at)}
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-end">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <span className="sr-only">Actions</span>
+                          <span className="sr-only">{t("users:table.actions")}</span>
                           <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
                             <circle cx="12" cy="5" r="1.5" />
                             <circle cx="12" cy="12" r="1.5" />
@@ -204,19 +208,19 @@ export function UsersPage() {
                           }}
                         >
                           <PenLine />
-                          Edit
+                          {t("actions.edit")}
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => toggleActiveMutation.mutate({ id: user.id, isActive: !user.is_active })}
                         >
-                          {user.is_active ? "Deactivate" : "Activate"}
+                          {user.is_active ? t("users:deactivate") : t("users:activate")}
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => setDeleting(user)}
                           className="text-destructive focus:text-destructive"
                         >
                           <Trash2 />
-                          Delete
+                          {t("actions.delete")}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -244,9 +248,9 @@ export function UsersPage() {
           if (!open) setDeleting(null);
         }}
         onConfirm={() => (deleting ? deleteMutation.mutateAsync(deleting.id) : Promise.resolve())}
-        title="Delete user"
-        description={deleting ? `Are you sure you want to delete "${deleting.full_name}"?` : undefined}
-        confirmLabel="Delete"
+        title={t("users:deleteConfirmTitle")}
+        description={deleting ? t("users:deleteConfirmDescription", { name: deleting.full_name }) : undefined}
+        confirmLabel={t("actions.delete")}
       />
     </div>
   );

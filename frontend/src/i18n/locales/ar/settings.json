@@ -1,0 +1,65 @@
+{
+  "title": "الإعدادات",
+  "description": "إدارة إعدادات التطبيق ومعلومات الشركة.",
+  "add": "إعداد جديد",
+  "create": "إضافة إعداد",
+  "edit": "تعديل الإعداد",
+  "delete": "حذف الإعداد",
+  "deleteConfirmTitle": "حذف الإعداد",
+  "deleteConfirmDescription": "هل أنت متأكد من حذف الإعداد \"{{name}}\"؟",
+  "refreshStats": "تحديث الإحصائيات",
+  "statsRefreshed": "تم تحديث الإحصائيات",
+  "metricsUpdated": "تم تحديث {{count}} مقياس",
+  "statsRefreshFailed": "تعذر تحديث الإحصائيات",
+  "createFailedToast": "تعذر إنشاء الإعداد",
+  "updateFailedToast": "تعذر تحديث الإعداد",
+  "editWithKey": "تعديل الإعداد: {{key}}",
+  "createTitle": "إنشاء إعداد",
+  "editTitle": "تعديل الإعداد",
+  "editDescription": "حدّث قيمة هذا الإعداد.",
+  "createDescription": "أضف إعداد تطبيق جديد.",
+  "public": "عام",
+  "private": "خاص",
+  "fields": {
+    "key": "المفتاح",
+    "value": "القيمة",
+    "valueJson": "القيمة (JSON)",
+    "group": "المجموعة",
+    "description": "الوصف",
+    "isPublic": "عام",
+    "type": "النوع"
+  },
+  "json": {
+    "invalid": "JSON غير صالح",
+    "notObject": "يجب أن تكون القيمة كائن JSON"
+  },
+  "themes": {
+    "light": "فاتح",
+    "dark": "داكن",
+    "system": "النظام"
+  },
+  "groups": {
+    "company": "الشركة",
+    "general": "عام",
+    "notifications": "الإشعارات",
+    "security": "الأمان",
+    "billing": "الفوترة",
+    "reports": "التقارير"
+  },
+  "table": {
+    "setting": "الإعداد",
+    "group": "المجموعة",
+    "value": "القيمة",
+    "updated": "آخر تحديث",
+    "actions": "إجراءات"
+  },
+  "emptyTitle": "لا توجد إعدادات",
+  "emptyDescription": "ستظهر هنا إعدادات التطبيق.",
+  "searchPlaceholder": "بحث عن الإعدادات…",
+  "filterGroup": "كل المجموعات",
+  "createdToast": "تم إنشاء الإعداد بنجاح.",
+  "updatedToast": "تم تحديث الإعداد بنجاح.",
+  "deletedToast": "تم حذف الإعداد بنجاح.",
+  "deleteFailedToast": "تعذر حذف الإعداد",
+  "loadFailed": "تعذر تحميل الإعدادات."
+}

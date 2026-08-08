@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 
 import { LoadingState } from "@/components/common/LoadingState";
 import { Logo } from "@/components/layout/Logo";
@@ -9,6 +10,8 @@ interface AuthLayoutProps {
 }
 
 export function AuthLayout({ children }: AuthLayoutProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background p-4">
       <div className="pointer-events-none absolute -top-40 -left-40 h-96 w-96 rounded-full bg-primary/20 blur-3xl" />
@@ -20,7 +23,7 @@ export function AuthLayout({ children }: AuthLayoutProps) {
           <Logo />
         </div>
         <div className="glass-panel rounded-2xl p-8">
-          <Suspense fallback={<LoadingState label="Loading…" />}>{children}</Suspense>
+          <Suspense fallback={<LoadingState label={t("states.loading")} />}>{children}</Suspense>
         </div>
       </div>
     </div>

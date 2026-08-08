@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowDownToLine, ArrowUpFromLine, Boxes, PackageMinus, Warehouse } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { DataPagination } from "@/components/common/DataPagination";
 import { EmptyState } from "@/components/common/EmptyState";
@@ -32,6 +33,7 @@ const movementVariant: Record<InventoryMovementType, "success" | "warning" | "se
 type Tab = "stock" | "movements";
 
 export function InventoryPage() {
+  const { t } = useTranslation();
   const [tab, setTab] = useState<Tab>("stock");
   const [page, setPage] = useState(1);
   const [movementsPage, setMovementsPage] = useState(1);
@@ -61,7 +63,7 @@ export function InventoryPage() {
   const productMap = new Map((productsData?.items ?? []).map((item) => [item.id, item.name]));
 
   if (isError) {
-    return <ErrorState message="Could not load inventory." onRetry={() => void refetch()} />;
+    return <ErrorState message={t("inventory:loadFailed")} onRetry={() => void refetch()} />;
   }
 
   const items = data?.items ?? [];
@@ -72,25 +74,25 @@ export function InventoryPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Inventory"
-        description="Monitor stock levels, warehouses, and movement history."
+        title={t("inventory:title")}
+        description={t("inventory:description")}
       />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard title="Stock on hand" value={totalUnits} icon={<Boxes />} />
+        <StatCard title={t("inventory:stats.stockOnHand")} value={totalUnits} icon={<Boxes />} />
         <StatCard
-          title="Low stock items"
+          title={t("inventory:stats.lowStockItems")}
           value={lowStockCount}
           icon={<PackageMinus />}
           className={cn(lowStockCount > 0 && "border-destructive/40")}
         />
         <StatCard
-          title="Warehouses"
+          title={t("inventory:stats.warehouses")}
           value={new Set(items.map((item) => item.warehouse)).size}
           icon={<Warehouse />}
         />
         <StatCard
-          title="Stock records"
+          title={t("inventory:stats.stockRecords")}
           value={data?.total ?? 0}
           icon={<ArrowDownToLine />}
         />
@@ -99,8 +101,8 @@ export function InventoryPage() {
       <div className="inline-flex rounded-lg border bg-muted/40 p-1">
         {(
           [
-            { key: "stock", label: "Stock" },
-            { key: "movements", label: "Movements" },
+            { key: "stock", label: t("inventory:tabs.stock") },
+            { key: "movements", label: t("inventory:tabs.movements") },
           ] as const
         ).map((item) => (
           <button
@@ -129,19 +131,23 @@ export function InventoryPage() {
                 ))}
               </div>
             ) : items.length === 0 ? (
-              <EmptyState title="No stock records" description="Add products to start tracking inventory." className="my-6" />
+              <EmptyState
+                title={t("inventory:emptyStockTitle")}
+                description={t("inventory:emptyStockDescription")}
+                className="my-6"
+              />
             ) : (
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b bg-muted/40 text-left text-xs text-muted-foreground">
-                    <th className="px-4 py-3 font-medium">Product</th>
-                    <th className="px-4 py-3 font-medium">Warehouse</th>
-                    <th className="px-4 py-3 font-medium">Location</th>
-                    <th className="px-4 py-3 font-medium">On hand</th>
-                    <th className="px-4 py-3 font-medium">Reserved</th>
-                    <th className="px-4 py-3 font-medium">Available</th>
-                    <th className="px-4 py-3 font-medium">Last restocked</th>
-                    <th className="px-4 py-3 text-right font-medium">Actions</th>
+                  <tr className="border-b bg-muted/40 text-start text-xs text-muted-foreground">
+                    <th className="px-4 py-3 font-medium">{t("inventory:table.product")}</th>
+                    <th className="px-4 py-3 font-medium">{t("inventory:table.warehouse")}</th>
+                    <th className="px-4 py-3 font-medium">{t("inventory:table.location")}</th>
+                    <th className="px-4 py-3 font-medium">{t("inventory:table.inStock")}</th>
+                    <th className="px-4 py-3 font-medium">{t("inventory:table.reserved")}</th>
+                    <th className="px-4 py-3 font-medium">{t("inventory:table.available")}</th>
+                    <th className="px-4 py-3 font-medium">{t("inventory:table.lastRestocked")}</th>
+                    <th className="px-4 py-3 text-end font-medium">{t("inventory:table.actions")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -155,7 +161,9 @@ export function InventoryPage() {
                               <Boxes className="h-4 w-4" />
                             </div>
                             <div className="min-w-0">
-                              <p className="font-medium">{productMap.get(item.product_id) ?? "Unknown product"}</p>
+                              <p className="font-medium">
+                                {productMap.get(item.product_id) ?? t("inventory:unknownProduct")}
+                              </p>
                               <p className="font-mono text-xs text-muted-foreground">{item.product_id.slice(0, 8)}</p>
                             </div>
                           </div>
@@ -170,19 +178,19 @@ export function InventoryPage() {
                         <td className="px-4 py-3 text-muted-foreground">
                           {item.last_restocked_at ? formatDateShort(item.last_restocked_at) : "—"}
                         </td>
-                        <td className="px-4 py-3 text-right">
+                        <td className="px-4 py-3 text-end">
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() =>
                               setAdjusting({
                                 id: item.product_id,
-                                name: productMap.get(item.product_id) ?? "Unknown product",
+                                name: productMap.get(item.product_id) ?? t("inventory:unknownProduct"),
                               })
                             }
                           >
                             <ArrowUpFromLine className="h-4 w-4" />
-                            Adjust
+                            {t("inventory:adjust")}
                           </Button>
                         </td>
                       </tr>
@@ -206,7 +214,7 @@ export function InventoryPage() {
         <>
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Movement history</CardTitle>
+              <CardTitle className="text-base">{t("inventory:movementsTitle")}</CardTitle>
             </CardHeader>
             <CardContent>
               {movementsLoading ? (
@@ -216,17 +224,21 @@ export function InventoryPage() {
                   ))}
                 </div>
               ) : movements.length === 0 ? (
-                <EmptyState title="No movements recorded" description="Stock adjustments will appear here." className="my-4" />
+                <EmptyState
+                  title={t("inventory:emptyMovementsTitle")}
+                  description={t("inventory:emptyMovementsDescription")}
+                  className="my-4"
+                />
               ) : (
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b text-left text-xs text-muted-foreground">
-                      <th className="px-3 py-2 font-medium">Type</th>
-                      <th className="px-3 py-2 font-medium">Product</th>
-                      <th className="px-3 py-2 font-medium">Change</th>
-                      <th className="px-3 py-2 font-medium">Reference</th>
-                      <th className="px-3 py-2 font-medium">Note</th>
-                      <th className="px-3 py-2 font-medium">Moved at</th>
+                    <tr className="border-b text-start text-xs text-muted-foreground">
+                      <th className="px-3 py-2 font-medium">{t("inventory:fields.movementType")}</th>
+                      <th className="px-3 py-2 font-medium">{t("inventory:table.product")}</th>
+                      <th className="px-3 py-2 font-medium">{t("inventory:movementsTable.change")}</th>
+                      <th className="px-3 py-2 font-medium">{t("inventory:fields.reference")}</th>
+                      <th className="px-3 py-2 font-medium">{t("inventory:fields.notes")}</th>
+                      <th className="px-3 py-2 font-medium">{t("inventory:movementsTable.movedAt")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -234,10 +246,14 @@ export function InventoryPage() {
                       <tr key={movement.id} className="border-b last:border-0">
                         <td className="px-3 py-2">
                           <Badge variant={movementVariant[movement.movement_type]}>
-                            {toTitleCase(movement.movement_type)}
+                            {t("inventory:movementTypes." + movement.movement_type, {
+                              defaultValue: toTitleCase(movement.movement_type),
+                            })}
                           </Badge>
                         </td>
-                        <td className="px-3 py-2">{productMap.get(movement.product_id) ?? "Unknown"}</td>
+                        <td className="px-3 py-2">
+                          {productMap.get(movement.product_id) ?? t("labels.unknown")}
+                        </td>
                         <td
                           className={cn(
                             "px-3 py-2 font-medium",

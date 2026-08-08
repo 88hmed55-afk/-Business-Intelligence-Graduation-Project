@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { PenLine, Plus, Shield, Trash2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { DataPagination } from "@/components/common/DataPagination";
@@ -17,13 +18,14 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { RoleDialog } from "@/features/roles/RoleDialog";
 import { rolesApi } from "@/features/roles/api";
-import { ApiClientError } from "@/lib/api";
+import { getErrorMessage } from "@/lib/error-messages";
 import { cn, formatDateShort } from "@/lib/utils";
 import type { Role, RoleDetail } from "@/types";
 
 const PAGE_SIZE = 10;
 
 export function RolesPage() {
+  const { t } = useTranslation();
   const { toast } = useToast();
 
   const [page, setPage] = useState(1);
@@ -55,13 +57,13 @@ export function RolesPage() {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => rolesApi.remove(id),
     onSuccess: () => {
-      toast({ title: "Role deleted", variant: "success" });
+      toast({ title: t("roles:deletedToast"), variant: "success" });
       setDeleting(null);
     },
     onError: (error: unknown) => {
       toast({
-        title: "Could not delete role",
-        description: error instanceof ApiClientError ? error.message : "Unexpected error",
+        title: t("roles:deleteFailedToast"),
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     },
@@ -75,7 +77,7 @@ export function RolesPage() {
   };
 
   if (isError) {
-    return <ErrorState message="Could not load roles." onRetry={() => void refetch()} />;
+    return <ErrorState message={t("roles:loadFailed")} onRetry={() => void refetch()} />;
   }
 
   const roles = data?.items ?? [];
@@ -83,8 +85,8 @@ export function RolesPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Roles & permissions"
-        description="Manage access roles and the permissions granted to each."
+        title={t("roles:title")}
+        description={t("roles:description")}
       >
         <Button
           onClick={() => {
@@ -94,7 +96,7 @@ export function RolesPage() {
           }}
         >
           <Plus className="h-4 w-4" />
-          New role
+          {t("roles:add")}
         </Button>
       </PageHeader>
 
@@ -102,12 +104,12 @@ export function RolesPage() {
         <input
           value={search}
           onChange={(event) => setSearch(event.target.value)}
-          placeholder="Search roles…"
-          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pl-9 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          placeholder={t("roles:searchPlaceholder")}
+          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 ps-9 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
         />
         <svg
           viewBox="0 0 24 24"
-          className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+          className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
           fill="none"
           stroke="currentColor"
           strokeWidth="2"
@@ -127,18 +129,18 @@ export function RolesPage() {
         ) : roles.length === 0 ? (
           <div className="p-12 text-center">
             <Shield className="mx-auto h-10 w-10 text-muted-foreground" />
-            <p className="mt-3 font-medium">No roles found</p>
-            <p className="text-sm text-muted-foreground">Try adjusting your search or filters.</p>
+            <p className="mt-3 font-medium">{t("roles:emptyTitle")}</p>
+            <p className="text-sm text-muted-foreground">{t("roles:emptyDescription")}</p>
           </div>
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b bg-muted/40 text-left text-xs text-muted-foreground">
-                <th className="px-4 py-3 font-medium">Role</th>
-                <th className="px-4 py-3 font-medium">Description</th>
-                <th className="px-4 py-3 font-medium">Type</th>
-                <th className="px-4 py-3 font-medium">Created</th>
-                <th className="px-4 py-3 text-right font-medium">Actions</th>
+              <tr className="border-b bg-muted/40 text-start text-xs text-muted-foreground">
+                <th className="px-4 py-3 font-medium">{t("roles:table.role")}</th>
+                <th className="px-4 py-3 font-medium">{t("roles:fields.description")}</th>
+                <th className="px-4 py-3 font-medium">{t("roles:table.type")}</th>
+                <th className="px-4 py-3 font-medium">{t("roles:table.created")}</th>
+                <th className="px-4 py-3 text-end font-medium">{t("roles:table.actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -155,17 +157,17 @@ export function RolesPage() {
                   <td className="px-4 py-3 text-muted-foreground">{role.description ?? "—"}</td>
                   <td className="px-4 py-3">
                     <Badge variant={role.is_system ? "default" : "secondary"}>
-                      {role.is_system ? "System" : "Custom"}
+                      {role.is_system ? t("roles:systemRole") : t("roles:customRole")}
                     </Badge>
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">
                     {formatDateShort(role.created_at)}
                   </td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-4 py-3 text-end">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <span className="sr-only">Actions</span>
+                          <span className="sr-only">{t("labels.actions")}</span>
                           <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
                             <circle cx="12" cy="5" r="1.5" />
                             <circle cx="12" cy="12" r="1.5" />
@@ -176,7 +178,7 @@ export function RolesPage() {
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => openEdit(role)}>
                           <PenLine />
-                          Edit
+                          {t("actions.edit")}
                         </DropdownMenuItem>
                         {!role.is_system && (
                           <DropdownMenuItem
@@ -184,7 +186,7 @@ export function RolesPage() {
                             className="text-destructive focus:text-destructive"
                           >
                             <Trash2 />
-                            Delete
+                            {t("actions.delete")}
                           </DropdownMenuItem>
                         )}
                       </DropdownMenuContent>
@@ -218,9 +220,9 @@ export function RolesPage() {
           if (!open) setDeleting(null);
         }}
         onConfirm={() => (deleting ? deleteMutation.mutateAsync(deleting.id) : Promise.resolve())}
-        title="Delete role"
-        description={deleting ? `Are you sure you want to delete role "${deleting.name}"?` : undefined}
-        confirmLabel="Delete"
+        title={t("roles:deleteConfirmTitle")}
+        description={deleting ? t("roles:deleteConfirmDescription", { name: deleting.name }) : undefined}
+        confirmLabel={t("actions.delete")}
       />
     </div>
   );

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -23,7 +24,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/components/ui/use-toast";
 import { usersApi, type UserCreatePayload, type UserUpdatePayload } from "@/features/users/api";
-import { ApiClientError } from "@/lib/api";
+import { getErrorMessage } from "@/lib/error-messages";
 import { toTitleCase } from "@/lib/utils";
 import type { User, UserRole } from "@/types";
 
@@ -36,6 +37,7 @@ interface UserDialogProps {
 const roles: UserRole[] = ["admin", "analyst", "viewer"];
 
 export function UserDialog({ open, onOpenChange, user }: UserDialogProps) {
+  const { t } = useTranslation();
   const { toast } = useToast();
 
   const [fullName, setFullName] = useState("");
@@ -59,13 +61,13 @@ export function UserDialog({ open, onOpenChange, user }: UserDialogProps) {
   const createMutation = useMutation({
     mutationFn: (payload: UserCreatePayload) => usersApi.create(payload),
     onSuccess: () => {
-      toast({ title: "User created", variant: "success" });
+      toast({ title: t("users:createdToast"), variant: "success" });
       onOpenChange(false);
     },
     onError: (error: unknown) => {
       toast({
-        title: "Could not create user",
-        description: error instanceof ApiClientError ? error.message : "Unexpected error",
+        title: t("users:createFailedToast"),
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     },
@@ -75,13 +77,13 @@ export function UserDialog({ open, onOpenChange, user }: UserDialogProps) {
     mutationFn: ({ id, payload }: { id: string; payload: UserUpdatePayload }) =>
       usersApi.update(id, payload),
     onSuccess: () => {
-      toast({ title: "User updated", variant: "success" });
+      toast({ title: t("users:updatedToast"), variant: "success" });
       onOpenChange(false);
     },
     onError: (error: unknown) => {
       toast({
-        title: "Could not update user",
-        description: error instanceof ApiClientError ? error.message : "Unexpected error",
+        title: t("users:updateFailedToast"),
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     },
@@ -117,14 +119,14 @@ export function UserDialog({ open, onOpenChange, user }: UserDialogProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{user ? "Edit user" : "Create user"}</DialogTitle>
+          <DialogTitle>{user ? t("users:edit") : t("users:create")}</DialogTitle>
           <DialogDescription>
-            {user ? "Update this user's details and permissions." : "Create a new user account."}
+            {user ? t("users:editDescription") : t("users:createDescription")}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="fullName">Full name</Label>
+            <Label htmlFor="fullName">{t("users:fields.fullName")}</Label>
             <Input
               id="fullName"
               value={fullName}
@@ -133,7 +135,7 @@ export function UserDialog({ open, onOpenChange, user }: UserDialogProps) {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t("users:fields.email")}</Label>
             <Input
               id="email"
               type="email"
@@ -143,7 +145,7 @@ export function UserDialog({ open, onOpenChange, user }: UserDialogProps) {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="username">Username</Label>
+            <Label htmlFor="username">{t("users:fields.username")}</Label>
             <Input
               id="username"
               value={username}
@@ -154,7 +156,7 @@ export function UserDialog({ open, onOpenChange, user }: UserDialogProps) {
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">
-              {user ? "New password (optional)" : "Password"}
+              {user ? t("users:fields.newPassword") : t("users:fields.password")}
             </Label>
             <Input
               id="password"
@@ -168,7 +170,7 @@ export function UserDialog({ open, onOpenChange, user }: UserDialogProps) {
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="role">Role</Label>
+              <Label htmlFor="role">{t("users:fields.role")}</Label>
               <Select value={role} onValueChange={(value: UserRole) => setRole(value)}>
                 <SelectTrigger id="role">
                   <SelectValue />
@@ -176,7 +178,7 @@ export function UserDialog({ open, onOpenChange, user }: UserDialogProps) {
                 <SelectContent>
                   {roles.map((r) => (
                     <SelectItem key={r} value={r}>
-                      {toTitleCase(r)}
+                      {t("users:roles." + r, { defaultValue: toTitleCase(r) })}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -186,7 +188,7 @@ export function UserDialog({ open, onOpenChange, user }: UserDialogProps) {
               <div className="flex items-end pb-1">
                 <div className="flex w-full items-center justify-between rounded-lg border p-3">
                   <Label htmlFor="active" className="cursor-pointer">
-                    Active
+                    {t("users:fields.isActive")}
                   </Label>
                   <Switch id="active" checked={isActive} onCheckedChange={setIsActive} />
                 </div>
@@ -200,11 +202,11 @@ export function UserDialog({ open, onOpenChange, user }: UserDialogProps) {
               onClick={() => onOpenChange(false)}
               disabled={isPending}
             >
-              Cancel
+              {t("actions.cancel")}
             </Button>
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-              {user ? "Save changes" : "Create user"}
+              {user ? t("actions.save") : t("users:create")}
             </Button>
           </DialogFooter>
         </form>

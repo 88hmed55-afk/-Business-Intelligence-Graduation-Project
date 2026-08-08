@@ -1,4 +1,5 @@
 import { Moon, Sun } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -11,18 +12,19 @@ import { useTheme } from "@/hooks/use-theme";
 import type { ThemeMode } from "@/stores/theme-store";
 
 export function ThemeToggle() {
+  const { t } = useTranslation();
   const { mode, setMode } = useTheme();
 
   const items: Array<{ value: ThemeMode; label: string }> = [
-    { value: "light", label: "Light" },
-    { value: "dark", label: "Dark" },
-    { value: "system", label: "System" },
+    { value: "light", label: t("nav:theme.light") },
+    { value: "dark", label: t("nav:theme.dark") },
+    { value: "system", label: t("nav:theme.system") },
   ];
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label="Toggle theme">
+        <Button variant="ghost" size="icon" aria-label={t("nav:theme.toggleTheme")}>
           <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
           <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
         </Button>

@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 import { cn } from "@/lib/utils";
 
@@ -9,6 +10,7 @@ interface LogoProps {
 }
 
 export function Logo({ className, linkTo = "/", compact }: LogoProps) {
+  const { t } = useTranslation();
   return (
     <Link to={linkTo} className={cn("flex items-center gap-2.5", className)}>
       <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-700 shadow-glow">
@@ -27,7 +29,7 @@ export function Logo({ className, linkTo = "/", compact }: LogoProps) {
             Nova<span className="gradient-text">BI</span>
           </span>
           <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
-            Intelligence
+            {t("nav:logo.tagline")}
           </span>
         </span>
       )}

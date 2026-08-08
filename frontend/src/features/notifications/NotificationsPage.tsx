@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Bell, Check, CheckCheck, Info, TriangleAlert } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { DataPagination } from "@/components/common/DataPagination";
 import { ErrorState } from "@/components/common/ErrorState";
@@ -16,7 +17,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { notificationsApi } from "@/features/notifications/api";
-import { ApiClientError } from "@/lib/api";
+import { getErrorMessage } from "@/lib/error-messages";
 import { cn, formatDate } from "@/lib/utils";
 import type { NotificationType } from "@/types";
 
@@ -43,6 +44,7 @@ const filterOptions: Array<{ value: string; label: string }> = [
 ];
 
 export function NotificationsPage() {
+  const { t } = useTranslation();
   const { toast } = useToast();
 
   const [page, setPage] = useState(1);
@@ -64,8 +66,8 @@ export function NotificationsPage() {
     },
     onError: (error: unknown) => {
       toast({
-        title: "Could not update notification",
-        description: error instanceof ApiClientError ? error.message : "Unexpected error",
+        title: t("notifications:updateFailed"),
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     },
@@ -74,12 +76,12 @@ export function NotificationsPage() {
   const markAllMutation = useMutation({
     mutationFn: () => notificationsApi.markAllRead(),
     onSuccess: () => {
-      toast({ title: "All notifications marked as read", variant: "success" });
+      toast({ title: t("notifications:readAllToast"), variant: "success" });
     },
     onError: (error: unknown) => {
       toast({
-        title: "Could not update notifications",
-        description: error instanceof ApiClientError ? error.message : "Unexpected error",
+        title: t("notifications:markReadFailed"),
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     },
@@ -89,14 +91,14 @@ export function NotificationsPage() {
   const unread = notifications.filter((notification) => !notification.is_read).length;
 
   if (isError) {
-    return <ErrorState message="Could not load notifications." onRetry={() => void refetch()} />;
+    return <ErrorState message={t("notifications:loadFailed")} onRetry={() => void refetch()} />;
   }
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Notifications"
-        description="View system notifications and alerts."
+        title={t("notifications:title")}
+        description={t("notifications:description")}
       >
         <Button
           variant="outline"
@@ -104,7 +106,7 @@ export function NotificationsPage() {
           onClick={() => markAllMutation.mutate()}
         >
           <CheckCheck className="h-4 w-4" />
-          Mark all as read
+          {t("notifications:markAllRead")}
         </Button>
       </PageHeader>
 
@@ -117,18 +119,20 @@ export function NotificationsPage() {
           }}
         >
           <SelectTrigger className="w-full sm:w-44">
-            <SelectValue placeholder="All" />
+            <SelectValue placeholder={t("labels.all")} />
           </SelectTrigger>
           <SelectContent>
             {filterOptions.map((option) => (
               <SelectItem key={option.value} value={option.value}>
-                {option.label}
+                {option.value === ""
+                  ? t("labels.all")
+                  : t(`notifications:statuses.${option.value}`, { defaultValue: option.label })}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
         {unread > 0 && (
-          <Badge variant="info">{unread} unread</Badge>
+          <Badge variant="info">{t("notifications:unreadCount", { count: unread })}</Badge>
         )}
       </div>
 
@@ -141,8 +145,8 @@ export function NotificationsPage() {
       ) : notifications.length === 0 ? (
         <div className="rounded-xl border p-12 text-center">
           <Bell className="mx-auto h-10 w-10 text-muted-foreground" />
-          <p className="mt-3 font-medium">No notifications</p>
-          <p className="text-sm text-muted-foreground">You're all caught up.</p>
+          <p className="mt-3 font-medium">{t("notifications:emptyTitle")}</p>
+          <p className="text-sm text-muted-foreground">{t("notifications:emptyDescription")}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
@@ -154,7 +158,7 @@ export function NotificationsPage() {
                 if (!notification.is_read) markReadMutation.mutate(notification.id);
               }}
               className={cn(
-                "flex items-start gap-3 rounded-xl border p-4 text-left transition-colors",
+                "flex items-start gap-3 rounded-xl border p-4 text-start transition-colors",
                 notification.is_read
                   ? "bg-background hover:bg-muted/40"
                   : "border-primary/30 bg-primary/5 hover:bg-primary/10",
@@ -167,7 +171,7 @@ export function NotificationsPage() {
                 <div className="flex items-start justify-between gap-2">
                   <p className="font-medium">{notification.title}</p>
                   <Badge variant={typeVariant[notification.notification_type]}>
-                    {notification.notification_type}
+                    {t(`notifications:types.${notification.notification_type}`)}
                   </Badge>
                 </div>
                 {notification.body && (

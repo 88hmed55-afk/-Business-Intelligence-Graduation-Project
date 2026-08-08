@@ -56,8 +56,22 @@ const config: Config = {
       fontFamily: {
         sans: [
           "Inter",
+          "Cairo",
           "ui-sans-serif",
           "system-ui",
+          "-apple-system",
+          "Segoe UI",
+          "Tahoma",
+          "Arial",
+          "sans-serif",
+        ],
+        arabic: [
+          "Cairo",
+          "Tajawal",
+          "Inter",
+          "ui-sans-serif",
+          "system-ui",
+          "Tahoma",
           "sans-serif",
         ],
       },

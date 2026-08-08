@@ -1,7 +1,9 @@
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { LogOut, Settings, UserRound } from "lucide-react";
 
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
+import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 import { NotificationsDropdown } from "@/components/layout/NotificationsDropdown";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -23,6 +25,7 @@ interface TopbarProps {
 
 export function Topbar({ onMenuClick }: TopbarProps) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { user, clearAuth } = useAuthStore();
 
   const handleLogout = () => {
@@ -37,7 +40,7 @@ export function Topbar({ onMenuClick }: TopbarProps) {
         size="icon"
         className="lg:hidden"
         onClick={onMenuClick}
-        aria-label="Open menu"
+        aria-label={t("nav:openMenu")}
       >
         <svg
           className="h-5 w-5"
@@ -56,17 +59,20 @@ export function Topbar({ onMenuClick }: TopbarProps) {
       <div className="flex-1" />
 
       <NotificationsDropdown />
+      <LanguageSwitcher />
       <ThemeToggle />
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="relative flex items-center gap-2 rounded-full p-1 pr-2">
+          <Button variant="ghost" className="relative flex items-center gap-2 rounded-full p-1 pe-2">
             <Avatar className="h-8 w-8">
               <AvatarFallback>{initials(user?.full_name)}</AvatarFallback>
             </Avatar>
-            <div className="hidden text-left leading-tight sm:block">
+            <div className="hidden text-start leading-tight sm:block">
               <p className="text-sm font-medium">{user?.full_name}</p>
-              <p className="text-[11px] text-muted-foreground">{toTitleCase(user?.role ?? "")}</p>
+              <p className="text-[11px] text-muted-foreground">
+                {user?.role ? t("roles." + user.role, { defaultValue: toTitleCase(user.role) }) : ""}
+              </p>
             </div>
           </Button>
         </DropdownMenuTrigger>
@@ -78,16 +84,16 @@ export function Topbar({ onMenuClick }: TopbarProps) {
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => navigate("/profile")}>
             <UserRound />
-            Profile
+            {t("nav:items.profile")}
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => navigate("/settings")}>
             <Settings />
-            Settings
+            {t("nav:items.settings")}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
             <LogOut />
-            Log out
+            {t("nav:actions.logout")}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

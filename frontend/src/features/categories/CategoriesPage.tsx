@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { FolderTree, PenLine, Plus, Trash2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { DataPagination } from "@/components/common/DataPagination";
@@ -16,7 +17,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { CategoryDialog } from "@/features/categories/CategoryDialog";
 import { categoriesApi } from "@/features/categories/api";
-import { ApiClientError } from "@/lib/api";
+import { getErrorMessage } from "@/lib/error-messages";
 import { cn, formatDateShort } from "@/lib/utils";
 import type { Category } from "@/types";
 
@@ -24,6 +25,7 @@ const PAGE_SIZE = 10;
 
 export function CategoriesPage() {
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
@@ -53,20 +55,20 @@ export function CategoriesPage() {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => categoriesApi.remove(id),
     onSuccess: () => {
-      toast({ title: "Category deleted", variant: "success" });
+      toast({ title: t("categories:deletedToast"), variant: "success" });
       setDeleting(null);
     },
     onError: (error: unknown) => {
       toast({
-        title: "Could not delete category",
-        description: error instanceof ApiClientError ? error.message : "Unexpected error",
+        title: t("categories:deleteFailedToast"),
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     },
   });
 
   if (isError) {
-    return <ErrorState message="Could not load categories." onRetry={() => void refetch()} />;
+    return <ErrorState message={t("categories:loadFailed")} onRetry={() => void refetch()} />;
   }
 
   const categories = data?.items ?? [];
@@ -74,10 +76,7 @@ export function CategoriesPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Categories"
-        description="Organize your product catalog into categories and subcategories."
-      >
+      <PageHeader title={t("categories:title")} description={t("categories:description")}>
         <Button
           onClick={() => {
             setEditing(null);
@@ -85,7 +84,7 @@ export function CategoriesPage() {
           }}
         >
           <Plus className="h-4 w-4" />
-          New category
+          {t("categories:add")}
         </Button>
       </PageHeader>
 
@@ -93,12 +92,12 @@ export function CategoriesPage() {
         <input
           value={search}
           onChange={(event) => setSearch(event.target.value)}
-          placeholder="Search categories…"
-          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pl-9 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          placeholder={t("categories:searchPlaceholder")}
+          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 ps-9 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
         />
         <svg
           viewBox="0 0 24 24"
-          className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+          className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
           fill="none"
           stroke="currentColor"
           strokeWidth="2"
@@ -118,19 +117,19 @@ export function CategoriesPage() {
         ) : categories.length === 0 ? (
           <div className="p-12 text-center">
             <FolderTree className="mx-auto h-10 w-10 text-muted-foreground" />
-            <p className="mt-3 font-medium">No categories found</p>
-            <p className="text-sm text-muted-foreground">Try adjusting your search or filters.</p>
+            <p className="mt-3 font-medium">{t("categories:emptyTitle")}</p>
+            <p className="text-sm text-muted-foreground">{t("categories:emptyDescription")}</p>
           </div>
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b bg-muted/40 text-left text-xs text-muted-foreground">
-                <th className="px-4 py-3 font-medium">Category</th>
-                <th className="px-4 py-3 font-medium">Parent</th>
-                <th className="px-4 py-3 font-medium">Slug</th>
-                <th className="px-4 py-3 font-medium">Sort order</th>
-                <th className="px-4 py-3 font-medium">Created</th>
-                <th className="px-4 py-3 text-right font-medium">Actions</th>
+              <tr className="border-b bg-muted/40 text-start text-xs text-muted-foreground">
+                <th className="px-4 py-3 font-medium">{t("categories:table.category")}</th>
+                <th className="px-4 py-3 font-medium">{t("categories:table.parent")}</th>
+                <th className="px-4 py-3 font-medium">{t("categories:table.slug")}</th>
+                <th className="px-4 py-3 font-medium">{t("categories:table.sortOrder")}</th>
+                <th className="px-4 py-3 font-medium">{t("categories:table.created")}</th>
+                <th className="px-4 py-3 text-end font-medium">{t("categories:table.actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -152,11 +151,11 @@ export function CategoriesPage() {
                     <td className="px-4 py-3 text-muted-foreground">
                       {formatDateShort(category.created_at)}
                     </td>
-                    <td className="px-4 py-3 text-right">
+                    <td className="px-4 py-3 text-end">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <span className="sr-only">Actions</span>
+                            <span className="sr-only">{t("categories:table.actions")}</span>
                             <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
                               <circle cx="12" cy="5" r="1.5" />
                               <circle cx="12" cy="12" r="1.5" />
@@ -172,14 +171,14 @@ export function CategoriesPage() {
                             }}
                           >
                             <PenLine />
-                            Edit
+                            {t("actions.edit")}
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => setDeleting(category)}
                             className="text-destructive focus:text-destructive"
                           >
                             <Trash2 />
-                            Delete
+                            {t("actions.delete")}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -213,9 +212,9 @@ export function CategoriesPage() {
           if (!open) setDeleting(null);
         }}
         onConfirm={() => (deleting ? deleteMutation.mutateAsync(deleting.id) : Promise.resolve())}
-        title="Delete category"
-        description={deleting ? `Are you sure you want to delete "${deleting.name}"?` : undefined}
-        confirmLabel="Delete"
+        title={t("categories:deleteConfirmTitle")}
+        description={deleting ? t("categories:deleteConfirmDescription", { name: deleting.name }) : undefined}
+        confirmLabel={t("actions.delete")}
       />
     </div>
   );

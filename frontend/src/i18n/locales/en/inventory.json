@@ -1,0 +1,80 @@
+{
+  "title": "Inventory",
+  "description": "Monitor stock levels and manage inventory adjustments.",
+  "adjust": "Adjust stock",
+  "adjustmentTitle": "Inventory adjustment",
+  "adjustmentDescription": "Record a stock movement for this product.",
+  "fields": {
+    "product": "Product",
+    "quantity": "Quantity",
+    "quantityDelta": "Quantity delta",
+    "quantityDeltaPlaceholder": "e.g. 10 or -5",
+    "movementType": "Movement type",
+    "reason": "Reason",
+    "reference": "Reference",
+    "referencePlaceholder": "PO-12345, invoice number…",
+    "notes": "Notes",
+    "date": "Date"
+  },
+  "movementTypes": {
+    "in": "Stock in",
+    "out": "Stock out",
+    "adjustment": "Adjustment",
+    "sale": "Sale",
+    "purchase": "Purchase",
+    "return": "Return",
+    "damage": "Damage",
+    "correction": "Correction",
+    "received": "Received",
+    "shipped": "Shipped",
+    "adjusted": "Adjusted",
+    "returned": "Returned",
+    "reserved": "Reserved",
+    "released": "Released"
+  },
+  "table": {
+    "product": "Product",
+    "sku": "SKU",
+    "inStock": "In stock",
+    "reserved": "Reserved",
+    "available": "Available",
+    "reorderLevel": "Reorder level",
+    "stockValue": "Stock value",
+    "status": "Status",
+    "actions": "Actions",
+    "warehouse": "Warehouse",
+    "location": "Location",
+    "lastRestocked": "Last restocked"
+  },
+  "status": {
+    "inStock": "In stock",
+    "lowStock": "Low stock",
+    "outOfStock": "Out of stock"
+  },
+  "stats": {
+    "stockOnHand": "Stock on hand",
+    "lowStockItems": "Low stock items",
+    "warehouses": "Warehouses",
+    "stockRecords": "Stock records"
+  },
+  "tabs": {
+    "stock": "Stock",
+    "movements": "Movements"
+  },
+  "unknownProduct": "Unknown product",
+  "movementsTitle": "Movement history",
+  "movementsTable": {
+    "change": "Change",
+    "movedAt": "Moved at"
+  },
+  "emptyStockTitle": "No stock records",
+  "emptyStockDescription": "Add products to start tracking inventory.",
+  "emptyMovementsTitle": "No movements recorded",
+  "emptyMovementsDescription": "Stock adjustments will appear here.",
+  "emptyTitle": "No inventory records found",
+  "emptyDescription": "Try adjusting your search or filters.",
+  "searchPlaceholder": "Search inventory…",
+  "adjustSuccess": "Inventory adjusted successfully.",
+  "adjustFailed": "Could not adjust inventory.",
+  "loadFailed": "Could not load inventory."
+}

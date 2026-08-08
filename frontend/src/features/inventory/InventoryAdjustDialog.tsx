@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Loader2, PackagePlus } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -17,27 +18,21 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { FormInput, FormSelect } from "@/components/forms";
 import { inventoryApi } from "@/features/orders/api";
-import { ApiClientError } from "@/lib/api";
+import i18n from "@/i18n";
+import { getErrorMessage } from "@/lib/error-messages";
 import type { InventoryMovementType } from "@/types";
 
 const schema = z.object({
   delta: z
     .string()
-    .min(1, "Delta is required")
-    .refine((value) => !Number.isNaN(Number(value)), "Must be a number"),
-  movement_type: z.string().min(1, "Movement type is required"),
+    .min(1, { error: () => i18n.t("validation.required") })
+    .refine((value) => !Number.isNaN(Number(value)), { error: () => i18n.t("validation.invalidNumber") }),
+  movement_type: z.string().min(1, { error: () => i18n.t("validation.required") }),
   reference: z.string().max(100).optional().or(z.literal("")),
   note: z.string().max(1000).optional().or(z.literal("")),
 });
 
 type AdjustFormValues = z.infer<typeof schema>;
-
-const movementOptions: Array<{ value: string; label: string }> = [
-  { value: "received", label: "Received (+)" },
-  { value: "adjusted", label: "Adjusted" },
-  { value: "returned", label: "Returned (+)" },
-  { value: "shipped", label: "Shipped (−)" },
-];
 
 interface InventoryAdjustDialogProps {
   open: boolean;
@@ -52,7 +47,15 @@ export function InventoryAdjustDialog({
   productName,
   productId,
 }: InventoryAdjustDialogProps) {
+  const { t } = useTranslation();
   const { toast } = useToast();
+
+  const movementOptions = [
+    { value: "received", label: `${t("inventory:movementTypes.received")} (+)` },
+    { value: "adjusted", label: t("inventory:movementTypes.adjusted") },
+    { value: "returned", label: `${t("inventory:movementTypes.returned")} (+)` },
+    { value: "shipped", label: `${t("inventory:movementTypes.shipped")} (−)` },
+  ];
 
   const form = useForm<AdjustFormValues>({
     resolver: zodResolver(schema),
@@ -69,13 +72,13 @@ export function InventoryAdjustDialog({
     mutationFn: (payload: { delta: string; movement_type: InventoryMovementType; reference?: string; note?: string }) =>
       inventoryApi.adjust(productId, payload),
     onSuccess: () => {
-      toast({ title: "Stock adjusted", variant: "success" });
+      toast({ title: t("inventory:adjustSuccess"), variant: "success" });
       onOpenChange(false);
     },
     onError: (error: unknown) => {
       toast({
-        title: "Could not adjust stock",
-        description: error instanceof ApiClientError ? error.message : "Unexpected error",
+        title: t("inventory:adjustFailed"),
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     },
@@ -96,48 +99,48 @@ export function InventoryAdjustDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <PackagePlus className="h-5 w-5 text-primary" />
-            Adjust stock
+            {t("inventory:adjust")}
           </DialogTitle>
           <DialogDescription>{productName}</DialogDescription>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormSelect
-              label="Movement type"
+              label={t("inventory:fields.movementType")}
               required
               control={form.control}
               name="movement_type"
               options={movementOptions}
             />
             <FormInput
-              label="Quantity delta"
+              label={t("inventory:fields.quantityDelta")}
               required
               type="number"
               step="1"
-              placeholder="e.g. 10 or -5"
+              placeholder={t("inventory:fields.quantityDeltaPlaceholder")}
               value={form.watch("delta")}
               onChange={(v) => form.setValue("delta", v, { shouldValidate: true })}
               error={form.formState.errors.delta?.message}
             />
           </div>
           <FormInput
-            label="Reference"
-            placeholder="PO-12345, invoice number…"
+            label={t("inventory:fields.reference")}
+            placeholder={t("inventory:fields.referencePlaceholder")}
             value={form.watch("reference")}
             onChange={(v) => form.setValue("reference", v)}
           />
           <FormInput
-            label="Note"
+            label={t("inventory:fields.notes")}
             value={form.watch("note")}
             onChange={(v) => form.setValue("note", v)}
           />
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={mutation.isPending}>
-              Cancel
+              {t("actions.cancel")}
             </Button>
             <Button type="submit" disabled={mutation.isPending}>
               {mutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-              Adjust stock
+              {t("inventory:adjust")}
             </Button>
           </DialogFooter>
         </form>

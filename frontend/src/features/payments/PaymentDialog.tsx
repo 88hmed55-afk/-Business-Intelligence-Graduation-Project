@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { CreditCard, Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -17,32 +18,21 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { FormInput, FormSelect, FormTextarea } from "@/components/forms";
 import { ordersApi, paymentsApi, type PaymentPayload, type PaymentUpdatePayload } from "@/features/orders/api";
-import { ApiClientError, fetchAllPages } from "@/lib/api";
+import i18n from "@/i18n";
+import { fetchAllPages } from "@/lib/api";
+import { getErrorMessage } from "@/lib/error-messages";
 import { formatDateInput } from "@/lib/utils";
 import type { Payment, PaymentMethod, PaymentStatus } from "@/types";
 
-const methodOptions: Array<{ value: string; label: string }> = [
-  { value: "credit_card", label: "Credit card" },
-  { value: "debit_card", label: "Debit card" },
-  { value: "bank_transfer", label: "Bank transfer" },
-  { value: "cash", label: "Cash" },
-  { value: "wallet", label: "Wallet" },
-  { value: "paypal", label: "PayPal" },
-];
-
-const statusOptions: Array<{ value: string; label: string }> = [
-  { value: "pending", label: "Pending" },
-  { value: "completed", label: "Completed" },
-  { value: "failed", label: "Failed" },
-  { value: "refunded", label: "Refunded" },
-];
-
 const schema = z.object({
-  order_id: z.string().min(1, "Order is required"),
+  order_id: z.string().min(1, { error: () => i18n.t("validation.required") }),
   amount: z
     .string()
-    .min(1, "Amount is required")
-    .refine((value) => !Number.isNaN(Number(value)) && Number(value) > 0, "Must be positive"),
+    .min(1, { error: () => i18n.t("validation.required") })
+    .refine(
+      (value) => !Number.isNaN(Number(value)) && Number(value) > 0,
+      { error: () => i18n.t("validation.mustBePositive") },
+    ),
   method: z.enum(["credit_card", "debit_card", "bank_transfer", "cash", "wallet", "paypal"]),
   status: z.enum(["pending", "completed", "failed", "refunded"]),
   transaction_id: z.string().max(128).optional().or(z.literal("")),
@@ -59,7 +49,24 @@ interface PaymentDialogProps {
 }
 
 export function PaymentDialog({ open, onOpenChange, payment }: PaymentDialogProps) {
+  const { t } = useTranslation();
   const { toast } = useToast();
+
+  const methodOptions = [
+    { value: "credit_card", label: t("payments:methods.credit_card") },
+    { value: "debit_card", label: t("payments:methods.debit_card") },
+    { value: "bank_transfer", label: t("payments:methods.bank_transfer") },
+    { value: "cash", label: t("payments:methods.cash") },
+    { value: "wallet", label: t("payments:methods.wallet") },
+    { value: "paypal", label: t("payments:methods.paypal") },
+  ];
+
+  const statusOptions = [
+    { value: "pending", label: t("payments:statuses.pending") },
+    { value: "completed", label: t("payments:statuses.completed") },
+    { value: "failed", label: t("payments:statuses.failed") },
+    { value: "refunded", label: t("payments:statuses.refunded") },
+  ];
 
   const { data: ordersData } = useQuery({
     queryKey: ["orders"],
@@ -98,13 +105,13 @@ export function PaymentDialog({ open, onOpenChange, payment }: PaymentDialogProp
   const createMutation = useMutation({
     mutationFn: (payload: PaymentPayload) => paymentsApi.create(payload),
     onSuccess: () => {
-      toast({ title: "Payment recorded", variant: "success" });
+      toast({ title: t("payments:createdToast"), variant: "success" });
       onOpenChange(false);
     },
     onError: (error: unknown) => {
       toast({
-        title: "Could not record payment",
-        description: error instanceof ApiClientError ? error.message : "Unexpected error",
+        title: t("payments:createFailedToast"),
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     },
@@ -114,13 +121,13 @@ export function PaymentDialog({ open, onOpenChange, payment }: PaymentDialogProp
     mutationFn: ({ id, payload }: { id: string; payload: PaymentUpdatePayload }) =>
       paymentsApi.update(id, payload),
     onSuccess: () => {
-      toast({ title: "Payment updated", variant: "success" });
+      toast({ title: t("payments:updatedToast"), variant: "success" });
       onOpenChange(false);
     },
     onError: (error: unknown) => {
       toast({
-        title: "Could not update payment",
-        description: error instanceof ApiClientError ? error.message : "Unexpected error",
+        title: t("payments:updateFailedToast"),
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     },
@@ -151,27 +158,27 @@ export function PaymentDialog({ open, onOpenChange, payment }: PaymentDialogProp
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <CreditCard className="h-5 w-5 text-primary" />
-            {payment ? "Edit payment" : "Record payment"}
+            {payment ? t("payments:edit") : t("payments:create")}
           </DialogTitle>
           <DialogDescription>
-            {payment ? `Update payment ${payment.payment_number}.` : "Record a payment against an order."}
+            {payment ? t("payments:editDescription", { number: payment.payment_number }) : t("payments:createDescription")}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormSelect
-            label="Order"
+            label={t("payments:fields.order")}
             required
             control={form.control}
             name="order_id"
-            placeholder="Select order…"
+            placeholder={t("payments:fields.selectOrder")}
             options={orders.map((order) => ({
               value: order.id,
-              label: `${order.order_number} — ${order.customer_name ?? "Unknown"}`,
+              label: `${order.order_number} — ${order.customer_name ?? t("labels.unknown")}`,
             }))}
           />
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormInput
-              label="Amount"
+              label={t("payments:fields.amount")}
               required
               type="number"
               min={0}
@@ -181,34 +188,34 @@ export function PaymentDialog({ open, onOpenChange, payment }: PaymentDialogProp
               error={form.formState.errors.amount?.message}
             />
             <FormInput
-              label="Paid at"
+              label={t("payments:fields.paymentDate")}
               type="date"
               value={form.watch("paid_at")}
               onChange={(v) => form.setValue("paid_at", v)}
             />
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <FormSelect label="Method" required control={form.control} name="method" options={methodOptions} />
-            <FormSelect label="Status" required control={form.control} name="status" options={statusOptions} />
+            <FormSelect label={t("payments:fields.method")} required control={form.control} name="method" options={methodOptions} />
+            <FormSelect label={t("payments:fields.status")} required control={form.control} name="status" options={statusOptions} />
           </div>
           <FormInput
-            label="Transaction ID"
+            label={t("payments:fields.transactionId")}
             value={form.watch("transaction_id")}
             onChange={(v) => form.setValue("transaction_id", v)}
           />
           <FormTextarea
-            label="Notes"
+            label={t("payments:fields.notes")}
             rows={2}
             value={form.watch("notes")}
             onChange={(v) => form.setValue("notes", v)}
           />
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
-              Cancel
+              {t("actions.cancel")}
             </Button>
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-              {payment ? "Save changes" : "Record payment"}
+              {payment ? t("actions.save") : t("payments:create")}
             </Button>
           </DialogFooter>
         </form>

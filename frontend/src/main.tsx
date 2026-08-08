@@ -7,12 +7,15 @@ import { Toaster } from "@/components/ui/use-toast";
 import { queryClient } from "@/lib/query-client";
 import { setupSyncChannel } from "@/lib/sync";
 import { initTheme } from "@/stores/theme-store";
+import { initLanguage } from "@/stores/language-store";
 
+import "@/i18n";
 import "@/index.css";
 
 import App from "@/App";
 
 initTheme();
+initLanguage();
 setupSyncChannel();
 
 ReactDOM.createRoot(document.getElementById("root")!).render(

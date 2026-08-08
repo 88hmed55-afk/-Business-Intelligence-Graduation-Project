@@ -14,3 +14,5 @@ httpx==0.28.1
 pytest==8.3.4
 openpyxl==3.1.5
 reportlab==4.2.5
+arabic-reshaper==3.0.1
+python-bidi==0.6.11

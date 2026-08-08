@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -23,7 +24,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { reportsApi, type ReportCreatePayload, type ReportUpdatePayload } from "@/features/reports/api";
-import { ApiClientError } from "@/lib/api";
+import { getErrorMessage } from "@/lib/error-messages";
 import type { Report, ReportStatus } from "@/types";
 
 interface ReportDialogProps {
@@ -39,6 +40,7 @@ const statusOptions: Array<{ value: ReportStatus; label: string }> = [
 ];
 
 export function ReportDialog({ open, onOpenChange, report }: ReportDialogProps) {
+  const { t } = useTranslation();
   const { toast } = useToast();
 
   const [name, setName] = useState("");
@@ -60,13 +62,13 @@ export function ReportDialog({ open, onOpenChange, report }: ReportDialogProps) 
   const createMutation = useMutation({
     mutationFn: (payload: ReportCreatePayload) => reportsApi.create(payload),
     onSuccess: () => {
-      toast({ title: "Report created", variant: "success" });
+      toast({ title: t("reports:createdToast"), variant: "success" });
       onOpenChange(false);
     },
     onError: (error: unknown) => {
       toast({
-        title: "Could not create report",
-        description: error instanceof ApiClientError ? error.message : "Unexpected error",
+        title: t("reports:createFailedToast"),
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     },
@@ -76,13 +78,13 @@ export function ReportDialog({ open, onOpenChange, report }: ReportDialogProps) 
     mutationFn: ({ id, payload }: { id: string; payload: ReportUpdatePayload }) =>
       reportsApi.update(id, payload),
     onSuccess: () => {
-      toast({ title: "Report updated", variant: "success" });
+      toast({ title: t("reports:updatedToast"), variant: "success" });
       onOpenChange(false);
     },
     onError: (error: unknown) => {
       toast({
-        title: "Could not update report",
-        description: error instanceof ApiClientError ? error.message : "Unexpected error",
+        title: t("reports:updateFailedToast"),
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     },
@@ -110,47 +112,47 @@ export function ReportDialog({ open, onOpenChange, report }: ReportDialogProps) 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{report ? "Edit report" : "Create report"}</DialogTitle>
+          <DialogTitle>{report ? t("reports:edit") : t("reports:create")}</DialogTitle>
           <DialogDescription>
-            {report ? "Update the details of this report." : "Create a new report definition."}
+            {report ? t("reports:editDescription") : t("reports:createDescription")}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Name</Label>
+            <Label htmlFor="name">{t("reports:fields.name")}</Label>
             <Input
               id="name"
               value={name}
               onChange={(event) => setName(event.target.value)}
-              placeholder="Monthly Revenue Report"
+              placeholder={t("reports:fields.namePlaceholder")}
               required
               maxLength={200}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">{t("reports:fields.description")}</Label>
             <Textarea
               id="description"
               value={description}
               onChange={(event) => setDescription(event.target.value)}
-              placeholder="Optional description"
+              placeholder={t("reports:fields.descriptionPlaceholder")}
               rows={2}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="query">Query</Label>
+            <Label htmlFor="query">{t("reports:fields.query")}</Label>
             <Textarea
               id="query"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="SELECT * FROM revenue WHERE month = CURRENT_DATE"
+              placeholder={t("reports:fields.queryPlaceholder")}
               rows={4}
               className="font-mono text-xs"
             />
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="schedule">Schedule (cron)</Label>
+              <Label htmlFor="schedule">{t("reports:fields.schedule")}</Label>
               <Input
                 id="schedule"
                 value={schedule}
@@ -159,15 +161,15 @@ export function ReportDialog({ open, onOpenChange, report }: ReportDialogProps) 
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="status">Status</Label>
+              <Label htmlFor="status">{t("labels.status")}</Label>
               <Select value={status} onValueChange={(value: ReportStatus) => setStatus(value)}>
                 <SelectTrigger id="status">
-                  <SelectValue placeholder="Select status" />
+                  <SelectValue placeholder={t("reports:selectStatus")} />
                 </SelectTrigger>
                 <SelectContent>
                   {statusOptions.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
-                      {option.label}
+                      {t(`reports:statuses.${option.value}`, { defaultValue: option.label })}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -181,11 +183,11 @@ export function ReportDialog({ open, onOpenChange, report }: ReportDialogProps) 
               onClick={() => onOpenChange(false)}
               disabled={isPending}
             >
-              Cancel
+              {t("actions.cancel")}
             </Button>
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-              {report ? "Save changes" : "Create report"}
+              {report ? t("actions.save") : t("reports:create")}
             </Button>
           </DialogFooter>
         </form>

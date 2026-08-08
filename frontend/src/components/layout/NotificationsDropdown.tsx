@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Bell, BellOff, CheckCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,7 +15,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/use-toast";
 import { notificationsApi } from "@/features/notifications/api";
-import { ApiClientError } from "@/lib/api";
+import { getErrorMessage } from "@/lib/error-messages";
 import { cn, formatDateShort } from "@/lib/utils";
 import { useNotificationStore } from "@/stores/notification-store";
 
@@ -27,6 +28,7 @@ const TYPE_STYLES: Record<string, string> = {
 
 export function NotificationsDropdown() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { toast } = useToast();
   const { setUnreadCount, setRecent } = useNotificationStore();
 
@@ -54,11 +56,11 @@ export function NotificationsDropdown() {
     try {
       await notificationsApi.markAllRead();
       setUnreadCount(0);
-      toast({ title: "All notifications marked as read", variant: "success" });
+      toast({ title: t("notifications:readAllToast"), variant: "success" });
     } catch (error) {
       toast({
-        title: "Could not update notifications",
-        description: error instanceof ApiClientError ? error.message : "Unexpected error",
+        title: t("notifications:markReadFailed"),
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     }
@@ -69,10 +71,10 @@ export function NotificationsDropdown() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">
+        <Button variant="ghost" size="icon" className="relative" aria-label={t("notifications:title")}>
           <Bell className="h-5 w-5" />
           {count > 0 && (
-            <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
+            <span className="absolute end-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
               {count > 9 ? "9+" : count}
             </span>
           )}
@@ -80,10 +82,10 @@ export function NotificationsDropdown() {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-80">
         <DropdownMenuLabel className="flex items-center justify-between">
-          <span>Notifications</span>
+          <span>{t("notifications:title")}</span>
           <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs" onClick={markAllRead}>
             <CheckCheck className="h-3.5 w-3.5" />
-            Mark all read
+            {t("notifications:markAllRead")}
           </Button>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
@@ -97,9 +99,9 @@ export function NotificationsDropdown() {
           ) : (data?.items.length ?? 0) === 0 ? (
             <div className="flex flex-col items-center gap-2 p-6 text-center">
               <BellOff className="h-8 w-8 text-muted-foreground" />
-              <p className="text-sm font-medium">No notifications</p>
+              <p className="text-sm font-medium">{t("notifications:emptyTitle")}</p>
               <p className="text-xs text-muted-foreground">
-                You are all caught up.
+                {t("notifications:emptyDescription")}
               </p>
             </div>
           ) : (
@@ -108,7 +110,7 @@ export function NotificationsDropdown() {
                 key={notification.id}
                 type="button"
                 onClick={() => navigate("/notifications")}
-                className="flex w-full items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-accent"
+                className="flex w-full items-start gap-3 px-4 py-3 text-start transition-colors hover:bg-accent"
               >
                 <span
                   className={cn(
@@ -120,7 +122,9 @@ export function NotificationsDropdown() {
                   <span className="flex items-center justify-between gap-2">
                     <span className="truncate text-sm font-medium">{notification.title}</span>
                     <Badge className={TYPE_STYLES[notification.notification_type] ?? TYPE_STYLES.info}>
-                      {notification.notification_type}
+                      {t(`notifications:types.${notification.notification_type}`, {
+                        defaultValue: notification.notification_type,
+                      })}
                     </Badge>
                   </span>
                   {notification.body && (

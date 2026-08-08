@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { FolderTree, Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -21,16 +22,17 @@ import {
   type CategoryCreatePayload,
   type CategoryUpdatePayload,
 } from "@/features/categories/api";
-import { ApiClientError } from "@/lib/api";
+import i18n from "@/i18n";
+import { getErrorMessage } from "@/lib/error-messages";
 import type { Category } from "@/types";
 
 const schema = z.object({
-  name: z.string().min(1, "Name is required").max(120),
+  name: z.string().min(1, { error: () => i18n.t("validation.required") }).max(120),
   description: z.string().max(1000).optional().or(z.literal("")),
   parent_id: z.string().optional().or(z.literal("")),
   sort_order: z
     .string()
-    .refine((value) => value === "" || !Number.isNaN(Number(value)), "Must be a number"),
+    .refine((value) => value === "" || !Number.isNaN(Number(value)), { error: () => i18n.t("validation.invalidNumber") }),
 });
 
 type CategoryFormValues = z.infer<typeof schema>;
@@ -44,6 +46,7 @@ interface CategoryDialogProps {
 
 export function CategoryDialog({ open, onOpenChange, category, categories }: CategoryDialogProps) {
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const form = useForm<CategoryFormValues>({
     resolver: zodResolver(schema),
@@ -64,13 +67,13 @@ export function CategoryDialog({ open, onOpenChange, category, categories }: Cat
   const createMutation = useMutation({
     mutationFn: (payload: CategoryCreatePayload) => categoriesApi.create(payload),
     onSuccess: () => {
-      toast({ title: "Category created", variant: "success" });
+      toast({ title: t("categories:createdToast"), variant: "success" });
       onOpenChange(false);
     },
     onError: (error: unknown) => {
       toast({
-        title: "Could not create category",
-        description: error instanceof ApiClientError ? error.message : "Unexpected error",
+        title: t("categories:createFailedToast"),
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     },
@@ -80,13 +83,13 @@ export function CategoryDialog({ open, onOpenChange, category, categories }: Cat
     mutationFn: ({ id, payload }: { id: string; payload: CategoryUpdatePayload }) =>
       categoriesApi.update(id, payload),
     onSuccess: () => {
-      toast({ title: "Category updated", variant: "success" });
+      toast({ title: t("categories:updatedToast"), variant: "success" });
       onOpenChange(false);
     },
     onError: (error: unknown) => {
       toast({
-        title: "Could not update category",
-        description: error instanceof ApiClientError ? error.message : "Unexpected error",
+        title: t("categories:updateFailedToast"),
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     },
@@ -118,36 +121,36 @@ export function CategoryDialog({ open, onOpenChange, category, categories }: Cat
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FolderTree className="h-5 w-5 text-primary" />
-            {category ? "Edit category" : "Create category"}
+            {category ? t("categories:edit") : t("categories:create")}
           </DialogTitle>
           <DialogDescription>
-            {category ? "Update this category's details." : "Add a new category to organize products."}
+            {category ? t("categories:editDescription") : t("categories:createDescription")}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormInput
-            label="Name"
+            label={t("categories:fields.name")}
             required
             value={form.watch("name")}
             onChange={(v) => form.setValue("name", v, { shouldValidate: true })}
             error={form.formState.errors.name?.message}
           />
           <FormTextarea
-            label="Description"
+            label={t("categories:fields.description")}
             rows={3}
             value={form.watch("description")}
             onChange={(v) => form.setValue("description", v)}
           />
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormSelect
-              label="Parent category"
+              label={t("categories:fields.parent")}
               control={form.control}
               name="parent_id"
               options={parentOptions}
-              placeholder="None (top level)"
+              placeholder={t("categories:parentPlaceholder")}
             />
             <FormInput
-              label="Sort order"
+              label={t("categories:fields.sortOrder")}
               type="number"
               value={form.watch("sort_order")}
               onChange={(v) => form.setValue("sort_order", v, { shouldValidate: true })}
@@ -156,11 +159,11 @@ export function CategoryDialog({ open, onOpenChange, category, categories }: Cat
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
-              Cancel
+              {t("actions.cancel")}
             </Button>
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-              {category ? "Save changes" : "Create category"}
+              {category ? t("actions.save") : t("categories:create")}
             </Button>
           </DialogFooter>
         </form>

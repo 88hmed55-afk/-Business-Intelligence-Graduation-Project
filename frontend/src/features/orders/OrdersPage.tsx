@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Eye, PenLine, Plus, ShoppingCart, Trash2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { DataPagination } from "@/components/common/DataPagination";
@@ -31,7 +32,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { OrderDialog } from "@/features/orders/OrderDialog";
 import { ordersApi } from "@/features/orders/api";
-import { ApiClientError } from "@/lib/api";
+import { getErrorMessage } from "@/lib/error-messages";
 import { cn, formatCurrency, formatDateShort, parseNum, toTitleCase } from "@/lib/utils";
 import type { Order, OrderStatus } from "@/types";
 
@@ -47,7 +48,7 @@ const orderStatusVariant: Record<OrderStatus, "default" | "warning" | "info" | "
 };
 
 const statusOptions: Array<{ value: string; label: string }> = [
-  { value: "", label: "All statuses" },
+  { value: "", label: "" },
   { value: "pending", label: "Pending" },
   { value: "processing", label: "Processing" },
   { value: "shipped", label: "Shipped" },
@@ -57,6 +58,7 @@ const statusOptions: Array<{ value: string; label: string }> = [
 ];
 
 export function OrdersPage() {
+  const { t } = useTranslation();
   const { toast } = useToast();
 
   const [page, setPage] = useState(1);
@@ -90,20 +92,20 @@ export function OrdersPage() {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => ordersApi.remove(id),
     onSuccess: () => {
-      toast({ title: "Order deleted", variant: "success" });
+      toast({ title: t("orders:deletedToast"), variant: "success" });
       setDeleting(null);
     },
     onError: (error: unknown) => {
       toast({
-        title: "Could not delete order",
-        description: error instanceof ApiClientError ? error.message : "Unexpected error",
+        title: t("orders:deleteFailedToast"),
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     },
   });
 
   if (isError) {
-    return <ErrorState message="Could not load orders." onRetry={() => void refetch()} />;
+    return <ErrorState message={t("orders:loadFailed")} onRetry={() => void refetch()} />;
   }
 
   const orders = data?.items ?? [];
@@ -112,8 +114,8 @@ export function OrdersPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Orders"
-        description="Track orders, line items, and delivery status."
+        title={t("orders:title")}
+        description={t("orders:description")}
       >
         <Button
           onClick={() => {
@@ -122,7 +124,7 @@ export function OrdersPage() {
           }}
         >
           <Plus className="h-4 w-4" />
-          New order
+          {t("orders:add")}
         </Button>
       </PageHeader>
 
@@ -131,12 +133,12 @@ export function OrdersPage() {
           <input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search orders…"
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pl-9 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            placeholder={t("orders:searchPlaceholder")}
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 ps-9 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           />
           <svg
             viewBox="0 0 24 24"
-            className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+            className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
             fill="none"
             stroke="currentColor"
             strokeWidth="2"
@@ -153,12 +155,14 @@ export function OrdersPage() {
           }}
         >
           <SelectTrigger className="w-full sm:w-44">
-            <SelectValue placeholder="All statuses" />
+            <SelectValue placeholder={t("orders:filterStatus")} />
           </SelectTrigger>
           <SelectContent>
             {statusOptions.map((option) => (
               <SelectItem key={option.value} value={option.value}>
-                {option.label}
+                {option.value === ""
+                  ? t("orders:filterStatus")
+                  : t("orders:statuses." + option.value, { defaultValue: option.label })}
               </SelectItem>
             ))}
           </SelectContent>
@@ -175,21 +179,21 @@ export function OrdersPage() {
         ) : orders.length === 0 ? (
           <div className="p-12 text-center">
             <ShoppingCart className="mx-auto h-10 w-10 text-muted-foreground" />
-            <p className="mt-3 font-medium">No orders found</p>
-            <p className="text-sm text-muted-foreground">Try adjusting your search or filters.</p>
+            <p className="mt-3 font-medium">{t("orders:emptyTitle")}</p>
+            <p className="text-sm text-muted-foreground">{t("orders:emptyDescription")}</p>
           </div>
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b bg-muted/40 text-left text-xs text-muted-foreground">
-                <th className="px-4 py-3 font-medium">Order</th>
-                <th className="px-4 py-3 font-medium">Customer</th>
-                <th className="px-4 py-3 font-medium">Date</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium">Payment</th>
-                <th className="px-4 py-3 font-medium">Items</th>
-                <th className="px-4 py-3 font-medium">Total</th>
-                <th className="px-4 py-3 text-right font-medium">Actions</th>
+              <tr className="border-b bg-muted/40 text-start text-xs text-muted-foreground">
+                <th className="px-4 py-3 font-medium">{t("orders:table.order")}</th>
+                <th className="px-4 py-3 font-medium">{t("orders:table.customer")}</th>
+                <th className="px-4 py-3 font-medium">{t("orders:table.date")}</th>
+                <th className="px-4 py-3 font-medium">{t("orders:table.status")}</th>
+                <th className="px-4 py-3 font-medium">{t("orders:table.payment")}</th>
+                <th className="px-4 py-3 font-medium">{t("orders:table.items")}</th>
+                <th className="px-4 py-3 font-medium">{t("orders:table.total")}</th>
+                <th className="px-4 py-3 text-end font-medium">{t("orders:table.actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -203,20 +207,24 @@ export function OrdersPage() {
                     {formatDateShort(order.order_date)}
                   </td>
                   <td className="px-4 py-3">
-                    <Badge variant={orderStatusVariant[order.status]}>{toTitleCase(order.status)}</Badge>
+                    <Badge variant={orderStatusVariant[order.status]}>
+                      {t("orders:statuses." + order.status, { defaultValue: toTitleCase(order.status) })}
+                    </Badge>
                   </td>
                   <td className="px-4 py-3">
                     <Badge variant={order.payment_status === "paid" ? "success" : "warning"}>
-                      {toTitleCase(order.payment_status)}
+                      {t("orders:paymentStatuses." + order.payment_status, {
+                        defaultValue: toTitleCase(order.payment_status),
+                      })}
                     </Badge>
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">{order.items.length}</td>
                   <td className="px-4 py-3 font-medium">{formatCurrency(order.total_amount)}</td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-4 py-3 text-end">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <span className="sr-only">Actions</span>
+                          <span className="sr-only">{t("labels.actions")}</span>
                           <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
                             <circle cx="12" cy="5" r="1.5" />
                             <circle cx="12" cy="12" r="1.5" />
@@ -227,7 +235,7 @@ export function OrdersPage() {
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => setViewing(order)}>
                           <Eye />
-                          View
+                          {t("actions.view")}
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => {
@@ -236,14 +244,14 @@ export function OrdersPage() {
                           }}
                         >
                           <PenLine />
-                          Edit
+                          {t("actions.edit")}
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => setDeleting(order)}
                           className="text-destructive focus:text-destructive"
                         >
                           <Trash2 />
-                          Delete
+                          {t("actions.delete")}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -272,7 +280,7 @@ export function OrdersPage() {
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2">
                   <ShoppingCart className="h-5 w-5 text-primary" />
-                  Order {viewingOrder.order_number}
+                  {t("orders:viewTitle", { number: viewingOrder.order_number })}
                 </DialogTitle>
                 <DialogDescription>
                   {viewingOrder.customer_name} · {formatDateShort(viewingOrder.order_date)}
@@ -280,20 +288,24 @@ export function OrdersPage() {
               </DialogHeader>
               <div className="flex flex-wrap gap-2">
                 <Badge variant={orderStatusVariant[viewingOrder.status]}>
-                  {toTitleCase(viewingOrder.status)}
+                  {t("orders:statuses." + viewingOrder.status, {
+                    defaultValue: toTitleCase(viewingOrder.status),
+                  })}
                 </Badge>
                 <Badge variant={viewingOrder.payment_status === "paid" ? "success" : "warning"}>
-                  {toTitleCase(viewingOrder.payment_status)}
+                  {t("orders:paymentStatuses." + viewingOrder.payment_status, {
+                    defaultValue: toTitleCase(viewingOrder.payment_status),
+                  })}
                 </Badge>
               </div>
               <div className="overflow-hidden rounded-xl border">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b bg-muted/40 text-left text-xs text-muted-foreground">
-                      <th className="px-3 py-2 font-medium">Product</th>
-                      <th className="px-3 py-2 font-medium">Qty</th>
-                      <th className="px-3 py-2 font-medium">Price</th>
-                      <th className="px-3 py-2 text-right font-medium">Line total</th>
+                    <tr className="border-b bg-muted/40 text-start text-xs text-muted-foreground">
+                      <th className="px-3 py-2 font-medium">{t("labels.product")}</th>
+                      <th className="px-3 py-2 font-medium">{t("labels.quantity")}</th>
+                      <th className="px-3 py-2 font-medium">{t("labels.price")}</th>
+                      <th className="px-3 py-2 text-right font-medium">{t("orders:fields.lineTotal")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -312,23 +324,23 @@ export function OrdersPage() {
               </div>
               <div className="space-y-1 rounded-xl bg-muted/40 p-4 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Subtotal</span>
+                  <span className="text-muted-foreground">{t("orders:fields.subtotal")}</span>
                   <span className="font-medium">{formatCurrency(viewingOrder.subtotal)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Discount</span>
+                  <span className="text-muted-foreground">{t("orders:fields.discount")}</span>
                   <span className="font-medium">−{formatCurrency(viewingOrder.discount_amount)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Tax</span>
+                  <span className="text-muted-foreground">{t("orders:fields.tax")}</span>
                   <span className="font-medium">{formatCurrency(viewingOrder.tax_amount)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Shipping</span>
+                  <span className="text-muted-foreground">{t("orders:fields.shipping")}</span>
                   <span className="font-medium">{formatCurrency(viewingOrder.shipping_fee)}</span>
                 </div>
                 <div className="flex justify-between border-t pt-1 font-semibold">
-                  <span>Total</span>
+                  <span>{t("orders:fields.total")}</span>
                   <span>{formatCurrency(viewingOrder.total_amount)}</span>
                 </div>
               </div>
@@ -343,9 +355,9 @@ export function OrdersPage() {
           if (!open) setDeleting(null);
         }}
         onConfirm={() => (deleting ? deleteMutation.mutateAsync(deleting.id) : Promise.resolve())}
-        title="Delete order"
-        description={deleting ? `Are you sure you want to delete order "${deleting.order_number}"?` : undefined}
-        confirmLabel="Delete"
+        title={t("orders:deleteConfirmTitle")}
+        description={deleting ? t("orders:deleteConfirmDescription", { name: deleting.order_number }) : undefined}
+        confirmLabel={t("actions.delete")}
       />
     </div>
   );

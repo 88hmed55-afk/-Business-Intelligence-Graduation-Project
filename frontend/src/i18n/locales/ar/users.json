@@ -1,0 +1,58 @@
+{
+  "title": "المستخدمون",
+  "description": "إدارة حسابات المستخدمين ووصولهم إلى التطبيق.",
+  "add": "مستخدم جديد",
+  "create": "إضافة مستخدم",
+  "edit": "تعديل المستخدم",
+  "delete": "حذف المستخدم",
+  "deleteConfirmTitle": "حذف المستخدم",
+  "deleteConfirmDescription": "هل أنت متأكد من حذف المستخدم \"{{name}}\"؟ لا يمكن التراجع عن هذا الإجراء.",
+  "createDescription": "أنشئ حساب مستخدم جديد.",
+  "editDescription": "حدّث تفاصيل هذا المستخدم وصلاحياته.",
+  "fields": {
+    "fullName": "الاسم الكامل",
+    "username": "اسم المستخدم",
+    "email": "البريد الإلكتروني",
+    "phone": "الهاتف",
+    "role": "الدور",
+    "status": "الحالة",
+    "password": "كلمة المرور",
+    "newPassword": "كلمة مرور جديدة (اختياري)",
+    "confirmPassword": "تأكيد كلمة المرور",
+    "isActive": "نشط"
+  },
+  "table": {
+    "user": "المستخدم",
+    "username": "اسم المستخدم",
+    "role": "الدور",
+    "status": "الحالة",
+    "created": "تاريخ الإنشاء",
+    "lastLogin": "آخر تسجيل دخول",
+    "actions": "إجراءات"
+  },
+  "statuses": {
+    "active": "نشط",
+    "inactive": "غير نشط"
+  },
+  "roles": {
+    "admin": "مدير",
+    "analyst": "محلل",
+    "viewer": "مشاهد"
+  },
+  "super": "مشرف",
+  "never": "أبدًا",
+  "activate": "تفعيل",
+  "deactivate": "تعطيل",
+  "emptyTitle": "لا يوجد مستخدمون",
+  "emptyDescription": "جرّب تعديل البحث أو التصفية.",
+  "searchPlaceholder": "بحث عن المستخدمين…",
+  "filterRole": "كل الأدوار",
+  "createdToast": "تم إنشاء المستخدم بنجاح.",
+  "updatedToast": "تم تحديث المستخدم بنجاح.",
+  "deletedToast": "تم حذف المستخدم بنجاح.",
+  "statusUpdatedToast": "تم تحديث حالة المستخدم بنجاح.",
+  "createFailedToast": "تعذر إنشاء المستخدم",
+  "updateFailedToast": "تعذر تحديث المستخدم",
+  "deleteFailedToast": "تعذر حذف المستخدم",
+  "loadFailed": "تعذر تحميل المستخدمين."
+}

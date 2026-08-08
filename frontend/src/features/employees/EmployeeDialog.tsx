@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Loader2, UserCog } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -21,27 +22,25 @@ import {
   type EmployeeCreatePayload,
   type EmployeeUpdatePayload,
 } from "@/features/employees/api";
-import { ApiClientError } from "@/lib/api";
+import i18n from "@/i18n";
+import { getErrorMessage } from "@/lib/error-messages";
 import { formatDateInput } from "@/lib/utils";
 import type { Employee, EmployeeStatus } from "@/types";
 
-const statusOptions: Array<{ value: string; label: string }> = [
-  { value: "active", label: "Active" },
-  { value: "on_leave", label: "On leave" },
-  { value: "terminated", label: "Terminated" },
-];
-
 const schema = z.object({
-  first_name: z.string().min(1, "First name is required").max(100),
-  last_name: z.string().min(1, "Last name is required").max(100),
-  email: z.union([z.literal(""), z.string().email("Invalid email")]),
+  first_name: z.string().min(1, { error: () => i18n.t("validation.required") }).max(100),
+  last_name: z.string().min(1, { error: () => i18n.t("validation.required") }).max(100),
+  email: z.union([z.literal(""), z.string().email({ error: () => i18n.t("validation.invalidEmail") })]),
   phone: z.string().max(50).optional().or(z.literal("")),
-  department: z.string().min(1, "Department is required").max(100),
-  position: z.string().min(1, "Position is required").max(100),
+  department: z.string().min(1, { error: () => i18n.t("validation.required") }).max(100),
+  position: z.string().min(1, { error: () => i18n.t("validation.required") }).max(100),
   salary: z
     .string()
-    .refine((value) => value === "" || !Number.isNaN(Number(value)), "Must be a number"),
-  hire_date: z.string().min(1, "Hire date is required"),
+    .refine(
+      (value) => value === "" || !Number.isNaN(Number(value)),
+      { error: () => i18n.t("validation.invalidNumber") },
+    ),
+  hire_date: z.string().min(1, { error: () => i18n.t("validation.required") }),
   status: z.enum(["active", "on_leave", "terminated"]),
   manager_id: z.string().optional().or(z.literal("")),
   address: z.string().max(2000).optional().or(z.literal("")),
@@ -58,7 +57,14 @@ interface EmployeeDialogProps {
 }
 
 export function EmployeeDialog({ open, onOpenChange, employee, employees }: EmployeeDialogProps) {
+  const { t } = useTranslation();
   const { toast } = useToast();
+
+  const statusOptions = [
+    { value: "active", label: t("employees:statuses.active") },
+    { value: "on_leave", label: t("employees:statuses.on_leave") },
+    { value: "terminated", label: t("employees:statuses.terminated") },
+  ];
 
   const form = useForm<EmployeeFormValues>({
     resolver: zodResolver(schema),
@@ -100,13 +106,13 @@ export function EmployeeDialog({ open, onOpenChange, employee, employees }: Empl
   const createMutation = useMutation({
     mutationFn: (payload: EmployeeCreatePayload) => employeesApi.create(payload),
     onSuccess: () => {
-      toast({ title: "Employee created", variant: "success" });
+      toast({ title: t("employees:createdToast"), variant: "success" });
       onOpenChange(false);
     },
     onError: (error: unknown) => {
       toast({
-        title: "Could not create employee",
-        description: error instanceof ApiClientError ? error.message : "Unexpected error",
+        title: t("employees:createFailedToast"),
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     },
@@ -116,13 +122,13 @@ export function EmployeeDialog({ open, onOpenChange, employee, employees }: Empl
     mutationFn: ({ id, payload }: { id: string; payload: EmployeeUpdatePayload }) =>
       employeesApi.update(id, payload),
     onSuccess: () => {
-      toast({ title: "Employee updated", variant: "success" });
+      toast({ title: t("employees:updatedToast"), variant: "success" });
       onOpenChange(false);
     },
     onError: (error: unknown) => {
       toast({
-        title: "Could not update employee",
-        description: error instanceof ApiClientError ? error.message : "Unexpected error",
+        title: t("employees:updateFailedToast"),
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     },
@@ -162,23 +168,23 @@ export function EmployeeDialog({ open, onOpenChange, employee, employees }: Empl
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <UserCog className="h-5 w-5 text-primary" />
-            {employee ? "Edit employee" : "Create employee"}
+            {employee ? t("employees:edit") : t("employees:create")}
           </DialogTitle>
           <DialogDescription>
-            {employee ? "Update this employee's details." : "Add a new employee to your team."}
+            {employee ? t("employees:editDescription") : t("employees:createDescription")}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormInput
-              label="First name"
+              label={t("employees:fields.firstName")}
               required
               value={form.watch("first_name")}
               onChange={(v) => form.setValue("first_name", v, { shouldValidate: true })}
               error={form.formState.errors.first_name?.message}
             />
             <FormInput
-              label="Last name"
+              label={t("employees:fields.lastName")}
               required
               value={form.watch("last_name")}
               onChange={(v) => form.setValue("last_name", v, { shouldValidate: true })}
@@ -187,7 +193,7 @@ export function EmployeeDialog({ open, onOpenChange, employee, employees }: Empl
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormInput
-              label="Email"
+              label={t("employees:fields.email")}
               required
               type="email"
               value={form.watch("email")}
@@ -195,21 +201,21 @@ export function EmployeeDialog({ open, onOpenChange, employee, employees }: Empl
               error={form.formState.errors.email?.message}
             />
             <FormInput
-              label="Phone"
+              label={t("employees:fields.phone")}
               value={form.watch("phone")}
               onChange={(v) => form.setValue("phone", v)}
             />
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormInput
-              label="Department"
+              label={t("employees:fields.department")}
               required
               value={form.watch("department")}
               onChange={(v) => form.setValue("department", v, { shouldValidate: true })}
               error={form.formState.errors.department?.message}
             />
             <FormInput
-              label="Position"
+              label={t("employees:fields.position")}
               required
               value={form.watch("position")}
               onChange={(v) => form.setValue("position", v, { shouldValidate: true })}
@@ -218,7 +224,7 @@ export function EmployeeDialog({ open, onOpenChange, employee, employees }: Empl
           </div>
           <div className="grid grid-cols-2 gap-4">
             <FormInput
-              label="Salary"
+              label={t("employees:fields.salary")}
               type="number"
               min={0}
               step="0.01"
@@ -227,7 +233,7 @@ export function EmployeeDialog({ open, onOpenChange, employee, employees }: Empl
               error={form.formState.errors.salary?.message}
             />
             <FormInput
-              label="Hire date"
+              label={t("employees:fields.hireDate")}
               required
               type="date"
               value={form.watch("hire_date")}
@@ -237,37 +243,37 @@ export function EmployeeDialog({ open, onOpenChange, employee, employees }: Empl
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormSelect
-              label="Status"
+              label={t("employees:fields.status")}
               control={form.control}
               name="status"
               options={statusOptions}
             />
             <FormSelect
-              label="Manager"
+              label={t("employees:fields.manager")}
               control={form.control}
               name="manager_id"
-              placeholder="None"
+              placeholder={t("labels.none")}
               options={managerOptions}
             />
           </div>
           <FormTextarea
-            label="Address"
+            label={t("employees:fields.address")}
             rows={2}
             value={form.watch("address")}
             onChange={(v) => form.setValue("address", v)}
           />
           <FormInput
-            label="City"
+            label={t("employees:fields.city")}
             value={form.watch("city")}
             onChange={(v) => form.setValue("city", v)}
           />
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
-              Cancel
+              {t("actions.cancel")}
             </Button>
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-              {employee ? "Save changes" : "Create employee"}
+              {employee ? t("actions.save") : t("employees:create")}
             </Button>
           </DialogFooter>
         </form>

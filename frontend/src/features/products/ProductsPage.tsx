@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Boxes, PenLine, Plus, Trash2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { DataPagination } from "@/components/common/DataPagination";
@@ -20,7 +21,8 @@ import { inventoryApi } from "@/features/orders/api";
 import { ProductDialog } from "@/features/products/ProductDialog";
 import { productsApi } from "@/features/products/api";
 import { suppliersApi } from "@/features/suppliers/api";
-import { ApiClientError, fetchAllPages } from "@/lib/api";
+import { fetchAllPages } from "@/lib/api";
+import { getErrorMessage } from "@/lib/error-messages";
 import { cn, formatCurrency, parseNum } from "@/lib/utils";
 import type { Product } from "@/types";
 
@@ -28,6 +30,7 @@ const PAGE_SIZE = 10;
 
 export function ProductsPage() {
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
@@ -79,30 +82,27 @@ export function ProductsPage() {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => productsApi.remove(id),
     onSuccess: () => {
-      toast({ title: "Product deleted", variant: "success" });
+      toast({ title: t("products:deletedToast"), variant: "success" });
       setDeleting(null);
     },
     onError: (error: unknown) => {
       toast({
-        title: "Could not delete product",
-        description: error instanceof ApiClientError ? error.message : "Unexpected error",
+        title: t("products:deleteFailedToast"),
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     },
   });
 
   if (isError) {
-    return <ErrorState message="Could not load products." onRetry={() => void refetch()} />;
+    return <ErrorState message={t("products:loadFailed")} onRetry={() => void refetch()} />;
   }
 
   const products = data?.items ?? [];
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Products"
-        description="Manage your product catalog, pricing, and stock levels."
-      >
+      <PageHeader title={t("products:title")} description={t("products:description")}>
         <Button
           onClick={() => {
             setEditing(null);
@@ -110,7 +110,7 @@ export function ProductsPage() {
           }}
         >
           <Plus className="h-4 w-4" />
-          New product
+          {t("products:add")}
         </Button>
       </PageHeader>
 
@@ -118,12 +118,12 @@ export function ProductsPage() {
         <input
           value={search}
           onChange={(event) => setSearch(event.target.value)}
-          placeholder="Search products…"
-          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pl-9 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          placeholder={t("products:searchPlaceholder")}
+          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 ps-9 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
         />
         <svg
           viewBox="0 0 24 24"
-          className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+          className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
           fill="none"
           stroke="currentColor"
           strokeWidth="2"
@@ -143,21 +143,21 @@ export function ProductsPage() {
         ) : products.length === 0 ? (
           <div className="p-12 text-center">
             <Boxes className="mx-auto h-10 w-10 text-muted-foreground" />
-            <p className="mt-3 font-medium">No products found</p>
-            <p className="text-sm text-muted-foreground">Try adjusting your search or filters.</p>
+            <p className="mt-3 font-medium">{t("products:emptyTitle")}</p>
+            <p className="text-sm text-muted-foreground">{t("products:emptyDescription")}</p>
           </div>
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b bg-muted/40 text-left text-xs text-muted-foreground">
-                <th className="px-4 py-3 font-medium">Product</th>
-                <th className="px-4 py-3 font-medium">Category</th>
-                <th className="px-4 py-3 font-medium">Supplier</th>
-                <th className="px-4 py-3 font-medium">Price</th>
-                <th className="px-4 py-3 font-medium">Cost</th>
-                <th className="px-4 py-3 font-medium">Stock</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 text-right font-medium">Actions</th>
+              <tr className="border-b bg-muted/40 text-start text-xs text-muted-foreground">
+                <th className="px-4 py-3 font-medium">{t("products:table.product")}</th>
+                <th className="px-4 py-3 font-medium">{t("products:table.category")}</th>
+                <th className="px-4 py-3 font-medium">{t("products:table.supplier")}</th>
+                <th className="px-4 py-3 font-medium">{t("products:table.price")}</th>
+                <th className="px-4 py-3 font-medium">{t("products:table.cost")}</th>
+                <th className="px-4 py-3 font-medium">{t("products:table.stock")}</th>
+                <th className="px-4 py-3 font-medium">{t("products:table.status")}</th>
+                <th className="px-4 py-3 text-end font-medium">{t("products:table.actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -192,14 +192,14 @@ export function ProductsPage() {
                     </td>
                     <td className="px-4 py-3">
                       <Badge variant={product.is_active ? "success" : "secondary"}>
-                        {product.is_active ? "Active" : "Inactive"}
+                        {product.is_active ? t("statuses.active") : t("statuses.inactive")}
                       </Badge>
                     </td>
-                    <td className="px-4 py-3 text-right">
+                    <td className="px-4 py-3 text-end">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <span className="sr-only">Actions</span>
+                            <span className="sr-only">{t("products:table.actions")}</span>
                             <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
                               <circle cx="12" cy="5" r="1.5" />
                               <circle cx="12" cy="12" r="1.5" />
@@ -215,14 +215,14 @@ export function ProductsPage() {
                             }}
                           >
                             <PenLine />
-                            Edit
+                            {t("actions.edit")}
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => setDeleting(product)}
                             className="text-destructive focus:text-destructive"
                           >
                             <Trash2 />
-                            Delete
+                            {t("actions.delete")}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -251,9 +251,9 @@ export function ProductsPage() {
           if (!open) setDeleting(null);
         }}
         onConfirm={() => (deleting ? deleteMutation.mutateAsync(deleting.id) : Promise.resolve())}
-        title="Delete product"
-        description={deleting ? `Are you sure you want to delete "${deleting.name}"?` : undefined}
-        confirmLabel="Delete"
+        title={t("products:deleteConfirmTitle")}
+        description={deleting ? t("products:deleteConfirmDescription", { name: deleting.name }) : undefined}
+        confirmLabel={t("actions.delete")}
       />
     </div>
   );

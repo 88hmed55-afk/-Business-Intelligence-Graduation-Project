@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { History } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { DataPagination } from "@/components/common/DataPagination";
 import { ErrorState } from "@/components/common/ErrorState";
@@ -32,6 +33,19 @@ const actionVariant: Record<ActivityAction, "success" | "info" | "destructive" |
   import: "outline",
 };
 
+const actionKeys: Record<ActivityAction, string> = {
+  create: "created",
+  update: "updated",
+  delete: "deleted",
+  login: "logged_in",
+  logout: "logged_out",
+  export: "exported",
+  publish: "publish",
+  archive: "archive",
+  restore: "restore",
+  import: "import",
+};
+
 const actionOptions: Array<{ value: string; label: string }> = [
   { value: "", label: "All actions" },
   { value: "create", label: "Create" },
@@ -47,6 +61,7 @@ const actionOptions: Array<{ value: string; label: string }> = [
 ];
 
 export function ActivityLogsPage() {
+  const { t } = useTranslation();
   const [page, setPage] = useState(1);
   const [action, setAction] = useState<ActivityAction | "">("");
 
@@ -61,7 +76,7 @@ export function ActivityLogsPage() {
   });
 
   if (isError) {
-    return <ErrorState message="Could not load activity logs." onRetry={() => void refetch()} />;
+    return <ErrorState message={t("activityLogs:loadFailed")} onRetry={() => void refetch()} />;
   }
 
   const logs = data?.items ?? [];
@@ -69,8 +84,8 @@ export function ActivityLogsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Activity log"
-        description="Audit trail of actions performed across the platform."
+        title={t("activityLogs:title")}
+        description={t("activityLogs:description")}
       />
 
       <Select
@@ -81,12 +96,14 @@ export function ActivityLogsPage() {
         }}
       >
         <SelectTrigger className="w-full sm:w-44">
-          <SelectValue placeholder="All actions" />
+          <SelectValue placeholder={t("activityLogs:filterAction")} />
         </SelectTrigger>
         <SelectContent>
           {actionOptions.map((option) => (
             <SelectItem key={option.value} value={option.value}>
-              {option.label}
+              {option.value === ""
+                ? t("activityLogs:filterAction")
+                : t(`activityLogs:actions.${actionKeys[option.value as ActivityAction]}`, { defaultValue: option.label })}
             </SelectItem>
           ))}
         </SelectContent>
@@ -102,8 +119,8 @@ export function ActivityLogsPage() {
         ) : logs.length === 0 ? (
           <div className="p-12 text-center">
             <History className="mx-auto h-10 w-10 text-muted-foreground" />
-            <p className="mt-3 font-medium">No activity recorded</p>
-            <p className="text-sm text-muted-foreground">Actions across the platform will appear here.</p>
+            <p className="mt-3 font-medium">{t("activityLogs:noActivityTitle")}</p>
+            <p className="text-sm text-muted-foreground">{t("activityLogs:noActivityDescription")}</p>
           </div>
         ) : (
           <div className="divide-y">
@@ -111,7 +128,9 @@ export function ActivityLogsPage() {
               <div key={log.id} className="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant={actionVariant[log.action]}>{toTitleCase(log.action)}</Badge>
+                    <Badge variant={actionVariant[log.action]}>
+                      {t(`activityLogs:actions.${actionKeys[log.action]}`, { defaultValue: toTitleCase(log.action) })}
+                    </Badge>
                     <span className="text-sm font-medium">
                       {log.module} {log.summary && <span className="font-normal text-muted-foreground">· {log.summary}</span>}
                     </span>
@@ -124,7 +143,7 @@ export function ActivityLogsPage() {
                 </div>
                 <div className="shrink-0 text-right text-xs text-muted-foreground">
                   <p className="whitespace-nowrap">{formatDate(log.created_at)}</p>
-                  <p>{log.user_email ?? "System"}</p>
+                  <p>{log.user_email ?? t("activityLogs:system")}</p>
                 </div>
               </div>
             ))}

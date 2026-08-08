@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { PenLine, Plus, Trash2, Users } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { DataPagination } from "@/components/common/DataPagination";
@@ -25,7 +26,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { EmployeeDialog } from "@/features/employees/EmployeeDialog";
 import { employeesApi } from "@/features/employees/api";
-import { ApiClientError } from "@/lib/api";
+import { getErrorMessage } from "@/lib/error-messages";
 import { cn, formatCurrency, formatDateShort, initials, toTitleCase } from "@/lib/utils";
 import type { Employee, EmployeeStatus } from "@/types";
 
@@ -38,13 +39,14 @@ const statusVariant: Record<EmployeeStatus, "success" | "secondary" | "destructi
 };
 
 const statusOptions: Array<{ value: string; label: string }> = [
-  { value: "", label: "All statuses" },
+  { value: "", label: "" },
   { value: "active", label: "Active" },
   { value: "on_leave", label: "On leave" },
   { value: "terminated", label: "Terminated" },
 ];
 
 export function EmployeesPage() {
+  const { t } = useTranslation();
   const { toast } = useToast();
 
   const [page, setPage] = useState(1);
@@ -77,20 +79,20 @@ export function EmployeesPage() {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => employeesApi.remove(id),
     onSuccess: () => {
-      toast({ title: "Employee deleted", variant: "success" });
+      toast({ title: t("employees:deletedToast"), variant: "success" });
       setDeleting(null);
     },
     onError: (error: unknown) => {
       toast({
-        title: "Could not delete employee",
-        description: error instanceof ApiClientError ? error.message : "Unexpected error",
+        title: t("employees:deleteFailedToast"),
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     },
   });
 
   if (isError) {
-    return <ErrorState message="Could not load employees." onRetry={() => void refetch()} />;
+    return <ErrorState message={t("employees:loadFailed")} onRetry={() => void refetch()} />;
   }
 
   const employees = data?.items ?? [];
@@ -98,8 +100,8 @@ export function EmployeesPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Employees"
-        description="Manage your workforce, departments, and roles."
+        title={t("employees:title")}
+        description={t("employees:description")}
       >
         <Button
           onClick={() => {
@@ -108,7 +110,7 @@ export function EmployeesPage() {
           }}
         >
           <Plus className="h-4 w-4" />
-          New employee
+          {t("employees:add")}
         </Button>
       </PageHeader>
 
@@ -117,12 +119,12 @@ export function EmployeesPage() {
           <input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search employees…"
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pl-9 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            placeholder={t("employees:searchPlaceholder")}
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 ps-9 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           />
           <svg
             viewBox="0 0 24 24"
-            className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+            className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
             fill="none"
             stroke="currentColor"
             strokeWidth="2"
@@ -139,12 +141,14 @@ export function EmployeesPage() {
           }}
         >
           <SelectTrigger className="w-full sm:w-44">
-            <SelectValue placeholder="All statuses" />
+            <SelectValue placeholder={t("employees:filterStatus")} />
           </SelectTrigger>
           <SelectContent>
             {statusOptions.map((option) => (
               <SelectItem key={option.value} value={option.value}>
-                {option.label}
+                {option.value === ""
+                  ? t("employees:filterStatus")
+                  : t("employees:statuses." + option.value, { defaultValue: option.label })}
               </SelectItem>
             ))}
           </SelectContent>
@@ -161,20 +165,20 @@ export function EmployeesPage() {
         ) : employees.length === 0 ? (
           <div className="p-12 text-center">
             <Users className="mx-auto h-10 w-10 text-muted-foreground" />
-            <p className="mt-3 font-medium">No employees found</p>
-            <p className="text-sm text-muted-foreground">Try adjusting your search or filters.</p>
+            <p className="mt-3 font-medium">{t("employees:emptyTitle")}</p>
+            <p className="text-sm text-muted-foreground">{t("employees:emptyDescription")}</p>
           </div>
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b bg-muted/40 text-left text-xs text-muted-foreground">
-                <th className="px-4 py-3 font-medium">Employee</th>
-                <th className="px-4 py-3 font-medium">Department</th>
-                <th className="px-4 py-3 font-medium">Position</th>
-                <th className="px-4 py-3 font-medium">Salary</th>
-                <th className="px-4 py-3 font-medium">Hired</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 text-right font-medium">Actions</th>
+              <tr className="border-b bg-muted/40 text-start text-xs text-muted-foreground">
+                <th className="px-4 py-3 font-medium">{t("employees:table.employee")}</th>
+                <th className="px-4 py-3 font-medium">{t("employees:table.department")}</th>
+                <th className="px-4 py-3 font-medium">{t("employees:table.jobTitle")}</th>
+                <th className="px-4 py-3 font-medium">{t("employees:table.salary")}</th>
+                <th className="px-4 py-3 font-medium">{t("employees:table.hired")}</th>
+                <th className="px-4 py-3 font-medium">{t("employees:table.status")}</th>
+                <th className="px-4 py-3 text-end font-medium">{t("employees:table.actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -199,14 +203,16 @@ export function EmployeesPage() {
                   </td>
                   <td className="px-4 py-3">
                     <Badge variant={statusVariant[employee.status]}>
-                      {toTitleCase(employee.status)}
+                      {t("employees:statuses." + employee.status, {
+                        defaultValue: toTitleCase(employee.status),
+                      })}
                     </Badge>
                   </td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-4 py-3 text-end">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <span className="sr-only">Actions</span>
+                          <span className="sr-only">{t("labels.actions")}</span>
                           <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
                             <circle cx="12" cy="5" r="1.5" />
                             <circle cx="12" cy="12" r="1.5" />
@@ -222,14 +228,14 @@ export function EmployeesPage() {
                           }}
                         >
                           <PenLine />
-                          Edit
+                          {t("actions.edit")}
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => setDeleting(employee)}
                           className="text-destructive focus:text-destructive"
                         >
                           <Trash2 />
-                          Delete
+                          {t("actions.delete")}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -262,9 +268,9 @@ export function EmployeesPage() {
           if (!open) setDeleting(null);
         }}
         onConfirm={() => (deleting ? deleteMutation.mutateAsync(deleting.id) : Promise.resolve())}
-        title="Delete employee"
-        description={deleting ? `Are you sure you want to delete "${deleting.full_name}"?` : undefined}
-        confirmLabel="Delete"
+        title={t("employees:deleteConfirmTitle")}
+        description={deleting ? t("employees:deleteConfirmDescription", { name: deleting.full_name }) : undefined}
+        confirmLabel={t("actions.delete")}
       />
     </div>
   );

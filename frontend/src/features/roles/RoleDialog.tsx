@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Loader2, Shield } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -15,7 +16,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { FormInput, FormTextarea } from "@/components/forms";
 import { permissionsApi, rolesApi } from "@/features/roles/api";
-import { ApiClientError } from "@/lib/api";
+import { getErrorMessage } from "@/lib/error-messages";
 import { cn, toTitleCase } from "@/lib/utils";
 import type { Permission, Role, RoleDetail } from "@/types";
 
@@ -27,6 +28,7 @@ interface RoleDialogProps {
 }
 
 export function RoleDialog({ open, onOpenChange, role, roleDetail }: RoleDialogProps) {
+  const { t } = useTranslation();
   const { toast } = useToast();
 
   const [name, setName] = useState("");
@@ -64,13 +66,13 @@ export function RoleDialog({ open, onOpenChange, role, roleDetail }: RoleDialogP
     mutationFn: (payload: { name: string; description?: string; permission_ids?: string[] }) =>
       rolesApi.create(payload),
     onSuccess: () => {
-      toast({ title: "Role created", variant: "success" });
+      toast({ title: t("roles:createdToast"), variant: "success" });
       onOpenChange(false);
     },
     onError: (error: unknown) => {
       toast({
-        title: "Could not create role",
-        description: error instanceof ApiClientError ? error.message : "Unexpected error",
+        title: t("roles:createFailedToast"),
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     },
@@ -80,13 +82,13 @@ export function RoleDialog({ open, onOpenChange, role, roleDetail }: RoleDialogP
     mutationFn: ({ id, payload }: { id: string; payload: { description?: string; permission_ids?: string[] } }) =>
       rolesApi.update(id, payload),
     onSuccess: () => {
-      toast({ title: "Role updated", variant: "success" });
+      toast({ title: t("roles:updatedToast"), variant: "success" });
       onOpenChange(false);
     },
     onError: (error: unknown) => {
       toast({
-        title: "Could not update role",
-        description: error instanceof ApiClientError ? error.message : "Unexpected error",
+        title: t("roles:updateFailedToast"),
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     },
@@ -136,42 +138,44 @@ export function RoleDialog({ open, onOpenChange, role, roleDetail }: RoleDialogP
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Shield className="h-5 w-5 text-primary" />
-            {role ? `Edit role: ${role.name}` : "Create role"}
+            {role ? `${t("roles:edit")}: ${role.name}` : t("roles:create")}
           </DialogTitle>
           <DialogDescription>
-            {role ? "Update the role's permissions." : "Create a new role with a set of permissions."}
+            {role ? t("roles:editDescription") : t("roles:createDescription")}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           {!role && (
             <FormInput
-              label="Name"
+              label={t("roles:fields.name")}
               required
               value={name}
               onChange={(value) => setName(value)}
             />
           )}
           <FormTextarea
-            label="Description"
+            label={t("roles:fields.description")}
             rows={2}
             value={description}
             onChange={(value) => setDescription(value)}
           />
           <div className="space-y-3">
-            <p className="text-sm font-medium">Permissions</p>
+            <p className="text-sm font-medium">{t("roles:assign")}</p>
             {modules.length === 0 && (
-              <p className="text-sm text-muted-foreground">No permissions available.</p>
+              <p className="text-sm text-muted-foreground">{t("roles:noPermissions")}</p>
             )}
             {modules.map((module) => (
               <div key={module} className="rounded-lg border">
                 <div className="flex items-center justify-between border-b bg-muted/40 px-3 py-2">
-                  <span className="text-sm font-medium">{toTitleCase(module)}</span>
+                  <span className="text-sm font-medium">
+                    {t("roles:permissionGroups." + module, { defaultValue: toTitleCase(module) })}
+                  </span>
                   <button
                     type="button"
                     className="text-xs font-medium text-primary hover:underline"
                     onClick={() => toggleModule(module)}
                   >
-                    {allSelected(module) ? "Clear all" : "Select all"}
+                    {allSelected(module) ? t("roles:clearAll") : t("roles:selectAll")}
                   </button>
                 </div>
                 <div className="grid grid-cols-1 gap-1.5 p-3 sm:grid-cols-2">
@@ -189,7 +193,11 @@ export function RoleDialog({ open, onOpenChange, role, roleDetail }: RoleDialogP
                         className="mt-0.5"
                       />
                       <span className="min-w-0">
-                        <span className="block font-medium">{toTitleCase(permission.action)}</span>
+                        <span className="block font-medium">
+                          {t("roles:permissionLevels." + permission.action, {
+                            defaultValue: toTitleCase(permission.action),
+                          })}
+                        </span>
                         <span className="block text-xs text-muted-foreground">
                           {permission.description ?? permission.code}
                         </span>
@@ -202,11 +210,11 @@ export function RoleDialog({ open, onOpenChange, role, roleDetail }: RoleDialogP
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
-              Cancel
+              {t("actions.cancel")}
             </Button>
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-              {role ? "Save changes" : "Create role"}
+              {role ? t("actions.save") : t("roles:create")}
             </Button>
           </DialogFooter>
         </form>

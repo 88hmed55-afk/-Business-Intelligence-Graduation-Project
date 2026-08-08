@@ -1,4 +1,5 @@
 import { Calendar, ChevronDown } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -11,11 +12,14 @@ import { cn } from "@/lib/utils";
 import { DATE_PRESETS, useDateFilterStore } from "@/stores/date-filter-store";
 
 export function DateFilter() {
+  const { t } = useTranslation();
   const { preset, dateFrom, dateTo, setPreset } = useDateFilterStore();
 
   const activeLabel = preset === "custom"
     ? `${dateFrom} — ${dateTo}`
-    : DATE_PRESETS.find(p => p.key === preset)?.label ?? "All Time";
+    : t(`nav:dates.${DATE_PRESETS.find(p => p.key === preset)?.key ?? "all"}`, {
+        defaultValue: DATE_PRESETS.find(p => p.key === preset)?.label,
+      });
 
   return (
     <DropdownMenu>
@@ -33,7 +37,7 @@ export function DateFilter() {
             onClick={() => setPreset(p.key)}
             className={cn(preset === p.key && "bg-primary/10 font-medium text-primary")}
           >
-            {p.label}
+            {t(`nav:dates.${p.key}`, { defaultValue: p.label })}
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>

@@ -1,0 +1,41 @@
+{
+  "title": "Profile",
+  "description": "Manage your personal information and account settings.",
+  "personalInfo": "Personal information",
+  "security": "Security",
+  "account": "Account settings",
+  "accountTitle": "Account",
+  "accountDescription": "Your account information.",
+  "lastLogin": "Last login",
+  "superuserBadge": "Superuser — full platform access",
+  "signOut": "Sign out",
+  "changePasswordDescription": "Update the password for your account.",
+  "fields": {
+    "fullName": "Full name",
+    "email": "Email",
+    "phone": "Phone",
+    "username": "Username",
+    "role": "Role",
+    "avatar": "Avatar",
+    "bio": "Bio",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "confirmNewPassword": "Confirm new password"
+  },
+  "actions": {
+    "updateProfile": "Update profile",
+    "changePassword": "Change password",
+    "updatePassword": "Update password",
+    "saving": "Saving…",
+    "cancel": "Cancel"
+  },
+  "toasts": {
+    "profileUpdated": "Profile updated successfully.",
+    "passwordUpdated": "Password updated successfully.",
+    "profileFailed": "Could not update your profile.",
+    "passwordFailed": "Could not update your password.",
+    "passwordMismatch": "New passwords do not match."
+  },
+  "memberSince": "Member since {{date}}",
+  "roleBadge": "{{role}}"
+}

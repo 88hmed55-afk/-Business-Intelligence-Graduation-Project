@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Trash2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
 
@@ -17,12 +18,14 @@ export function BulkActionsBar({
   count,
   onClear,
   onDelete,
-  deleteLabel = "Delete selected",
+  deleteLabel,
   onCustomAction,
   customLabel,
   customIcon,
 }: BulkActionsBarProps) {
+  const { t } = useTranslation();
   if (count === 0) return null;
+  const resolvedDeleteLabel = deleteLabel ?? t("nav:actions.deleteSelected");
 
   return (
     <motion.div
@@ -32,9 +35,9 @@ export function BulkActionsBar({
       className="flex flex-wrap items-center gap-3 rounded-xl border border-primary/30 bg-primary/5 px-4 py-2.5"
     >
       <span className="text-sm font-medium text-primary">
-        {count} selected
+        {t("nav:actions.selected", { count })}
       </span>
-      <div className="ml-auto flex items-center gap-2">
+      <div className="ms-auto flex items-center gap-2">
         {onCustomAction && customLabel && (
           <Button variant="secondary" size="sm" onClick={onCustomAction}>
             {customIcon}
@@ -43,10 +46,10 @@ export function BulkActionsBar({
         )}
         <Button variant="destructive" size="sm" onClick={onDelete}>
           <Trash2 className="h-4 w-4" />
-          {deleteLabel}
+          {resolvedDeleteLabel}
         </Button>
         <Button variant="ghost" size="sm" onClick={onClear}>
-          Clear
+          {t("actions.clear")}
         </Button>
       </div>
     </motion.div>

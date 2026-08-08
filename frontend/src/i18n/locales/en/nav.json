@@ -1,0 +1,84 @@
+{
+  "sections": {
+    "overview": "Overview",
+    "businessIntelligence": "Business Intelligence",
+    "commerce": "Commerce",
+    "organization": "Organization",
+    "platform": "Platform"
+  },
+  "items": {
+    "executiveDashboard": "Executive Dashboard",
+    "dashboard": "Dashboard",
+    "analytics": "Analytics",
+    "forecasting": "Forecasting",
+    "insights": "Insights & Rankings",
+    "trends": "Trends & Analytics",
+    "reports": "Reports",
+    "businessReports": "Business Reports",
+    "customers": "Customers",
+    "products": "Products",
+    "categories": "Categories",
+    "suppliers": "Suppliers",
+    "inventory": "Inventory",
+    "orders": "Orders",
+    "payments": "Payments",
+    "employees": "Employees",
+    "rolesPermissions": "Roles & Permissions",
+    "activityLogs": "Activity Logs",
+    "notifications": "Notifications",
+    "settings": "Settings",
+    "profile": "Profile",
+    "users": "Users",
+    "kpis": "KPIs",
+    "dashboards": "Dashboards"
+  },
+  "collapse": "Collapse",
+  "expand": "Expand",
+  "sidebar": "Sidebar",
+  "openMenu": "Open menu",
+  "breadcrumb": "Breadcrumb",
+  "actions": {
+    "logout": "Log out",
+    "reloadView": "Reload view",
+    "deleteSelected": "Delete selected",
+    "selected": "{{count}} selected"
+  },
+  "footer": {
+    "copyright": "© {{year}} Nova BI · Business Intelligence Management System",
+    "operational": "All systems operational"
+  },
+  "theme": {
+    "toggleTheme": "Toggle theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "logo": {
+    "tagline": "Intelligence"
+  },
+  "states": {
+    "contentLoadError": "Something went wrong while loading this content.",
+    "renderError": "An unexpected error occurred while rendering this view."
+  },
+  "stats": {
+    "vsLastPeriod": "vs last period"
+  },
+  "dates": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "7d": "Last 7 Days",
+    "30d": "Last 30 Days",
+    "90d": "Last 90 Days",
+    "this_month": "This Month",
+    "last_month": "Last Month",
+    "this_quarter": "This Quarter",
+    "last_quarter": "Last Quarter",
+    "this_year": "This Year",
+    "last_year": "Last Year",
+    "all": "All Time",
+    "custom": "Custom"
+  },
+  "forms": {
+    "selectPlaceholder": "Select…"
+  }
+}

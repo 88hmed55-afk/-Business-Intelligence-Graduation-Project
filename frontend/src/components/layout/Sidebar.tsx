@@ -1,10 +1,12 @@
 import { NavLink } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import {
   BarChart3,
   Bell,
   Boxes,
   ChevronLeft,
+  ChevronRight,
   CircleUser,
   FileText,
   Gauge,
@@ -31,6 +33,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/auth-store";
 import { useUiStore } from "@/stores/ui-store";
+import { useIsRTL } from "@/hooks/use-direction";
 
 interface SidebarProps {
   onNavigate?: () => void;
@@ -50,55 +53,58 @@ interface NavSection {
 }
 
 export function Sidebar({ onNavigate }: SidebarProps) {
+  const { t } = useTranslation();
   const user = useAuthStore((state) => state.user);
   const collapsed = useUiStore((state) => state.sidebarCollapsed);
   const toggle = useUiStore((state) => state.toggleSidebar);
   const isAdmin = user?.role === "admin";
+  const isRTL = useIsRTL();
+  const CollapseIcon = isRTL ? ChevronRight : ChevronLeft;
 
   const sections: NavSection[] = [
     {
-      title: "Overview",
+      title: t("nav:sections.overview"),
       items: [
-        { label: "Executive Dashboard", to: "/", icon: LayoutDashboard, end: true },
-        { label: "Dashboard", to: "/dashboard", icon: BarChart3 },
-        { label: "Analytics", to: "/analytics", icon: TrendingUp },
+        { label: t("nav:items.executiveDashboard"), to: "/", icon: LayoutDashboard, end: true },
+        { label: t("nav:items.dashboard"), to: "/dashboard", icon: BarChart3 },
+        { label: t("nav:items.analytics"), to: "/analytics", icon: TrendingUp },
       ],
     },
     {
-      title: "Business Intelligence",
+      title: t("nav:sections.businessIntelligence"),
       items: [
-        { label: "Forecasting", to: "/forecasting", icon: LineChart },
-        { label: "Insights & Rankings", to: "/insights", icon: Zap },
-        { label: "Trends & Analytics", to: "/trends", icon: Target },
-        { label: "Reports", to: "/reports", icon: FileText },
+        { label: t("nav:items.forecasting"), to: "/forecasting", icon: LineChart },
+        { label: t("nav:items.insights"), to: "/insights", icon: Zap },
+        { label: t("nav:items.trends"), to: "/trends", icon: Target },
+        { label: t("nav:items.reports"), to: "/reports", icon: FileText },
       ],
     },
     {
-      title: "Commerce",
+      title: t("nav:sections.commerce"),
       items: [
-        { label: "Customers", to: "/customers", icon: Users },
-        { label: "Products", to: "/products", icon: Package },
-        { label: "Categories", to: "/categories", icon: Tags },
-        { label: "Suppliers", to: "/suppliers", icon: Truck },
-        { label: "Inventory", to: "/inventory", icon: Boxes },
-        { label: "Orders", to: "/orders", icon: ShoppingCart },
-        { label: "Payments", to: "/payments", icon: Wallet },
+        { label: t("nav:items.customers"), to: "/customers", icon: Users },
+        { label: t("nav:items.products"), to: "/products", icon: Package },
+        { label: t("nav:items.categories"), to: "/categories", icon: Tags },
+        { label: t("nav:items.suppliers"), to: "/suppliers", icon: Truck },
+        { label: t("nav:items.inventory"), to: "/inventory", icon: Boxes },
+        { label: t("nav:items.orders"), to: "/orders", icon: ShoppingCart },
+        { label: t("nav:items.payments"), to: "/payments", icon: Wallet },
       ],
     },
     {
-      title: "Organization",
+      title: t("nav:sections.organization"),
       items: [
-        { label: "Employees", to: "/employees", icon: CircleUser },
-        { label: "Roles & Permissions", to: "/roles", icon: Shield, adminOnly: true },
-        { label: "Activity Logs", to: "/activity-logs", icon: History, adminOnly: true },
+        { label: t("nav:items.employees"), to: "/employees", icon: CircleUser },
+        { label: t("nav:items.rolesPermissions"), to: "/roles", icon: Shield, adminOnly: true },
+        { label: t("nav:items.activityLogs"), to: "/activity-logs", icon: History, adminOnly: true },
       ],
     },
     {
-      title: "Platform",
+      title: t("nav:sections.platform"),
       items: [
-        { label: "Notifications", to: "/notifications", icon: Bell },
-        { label: "Settings", to: "/settings", icon: Settings },
-        { label: "Profile", to: "/profile", icon: Gauge },
+        { label: t("nav:items.notifications"), to: "/notifications", icon: Bell },
+        { label: t("nav:items.settings"), to: "/settings", icon: Settings },
+        { label: t("nav:items.profile"), to: "/profile", icon: Gauge },
       ],
     },
   ];
@@ -162,16 +168,16 @@ export function Sidebar({ onNavigate }: SidebarProps) {
           size="sm"
           onClick={toggle}
           className="w-full"
-          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          title={collapsed ? t("nav:expand") : t("nav:collapse")}
         >
           <motion.span
             animate={{ rotate: collapsed ? 180 : 0 }}
             transition={{ duration: 0.2 }}
             className="flex items-center"
           >
-            <ChevronLeft className="h-4 w-4" />
+            <CollapseIcon className="h-4 w-4" />
           </motion.span>
-          {!collapsed && "Collapse"}
+          {!collapsed && t("nav:collapse")}
         </Button>
       </div>
     </div>

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { ArrowDown, ArrowUp, ArrowUpDown, Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -53,11 +54,14 @@ export function DataTable<T>({
   onSelectionChange,
   sort,
   onSortChange,
-  emptyTitle = "No records found",
-  emptyDescription = "Try adjusting your search or filters.",
+  emptyTitle,
+  emptyDescription,
   skeletonRows = 8,
   className,
 }: DataTableProps<T>) {
+  const { t } = useTranslation();
+  const resolvedEmptyTitle = emptyTitle ?? t("states.noRecords");
+  const resolvedEmptyDescription = emptyDescription ?? t("states.noRecordsDescription");
   const allSelected =
     data.length > 0 && (selected?.size ?? 0) === data.length;
   const someSelected = (selected?.size ?? 0) > 0 && !allSelected;
@@ -94,9 +98,9 @@ export function DataTable<T>({
   if (isError) {
     return (
       <EmptyState
-        title="Something went wrong"
-        description={errorMessage ?? "Could not load the data."}
-        actionLabel="Retry"
+        title={t("states.somethingWentWrong")}
+        description={errorMessage ?? t("states.couldNotLoad")}
+        actionLabel={t("actions.retry")}
         onAction={onRetry}
       />
     );
@@ -139,7 +143,7 @@ export function DataTable<T>({
 
   if (data.length === 0) {
     return (
-      <EmptyState title={emptyTitle} description={emptyDescription} className="my-6" />
+      <EmptyState title={resolvedEmptyTitle} description={resolvedEmptyDescription} className="my-6" />
     );
   }
 
@@ -153,7 +157,7 @@ export function DataTable<T>({
                 <Checkbox
                   checked={allSelected || someSelected}
                   onCheckedChange={toggleAll}
-                  aria-label="Select all rows"
+                  aria-label={t("actions.selectAll")}
                 />
               </TableHead>
             )}
@@ -197,7 +201,7 @@ export function DataTable<T>({
                     <Checkbox
                       checked={isSelected}
                       onCheckedChange={() => toggleRow(id)}
-                      aria-label="Select row"
+                      aria-label={t("actions.selectAll")}
                     />
                   </TableCell>
                 )}
@@ -214,7 +218,7 @@ export function DataTable<T>({
       {isLoading && (
         <div className="flex items-center justify-center gap-2 border-t p-3 text-sm text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin" />
-          Refreshing…
+          {t("states.refreshing")}
         </div>
       )}
     </div>

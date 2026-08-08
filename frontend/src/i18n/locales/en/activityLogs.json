@@ -1,0 +1,41 @@
+{
+  "title": "Activity Logs",
+  "description": "Track every action taken in the application.",
+  "table": {
+    "action": "Action",
+    "actor": "Actor",
+    "resource": "Resource",
+    "target": "Target",
+    "details": "Details",
+    "date": "Date",
+    "ipAddress": "IP address"
+  },
+  "actions": {
+    "created": "Created",
+    "updated": "Updated",
+    "deleted": "Deleted",
+    "logged_in": "Signed in",
+    "logged_out": "Signed out",
+    "exported": "Exported",
+    "downloaded": "Downloaded",
+    "assigned": "Assigned",
+    "removed": "Removed",
+    "adjusted": "Adjusted",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "publish": "Publish",
+    "archive": "Archive",
+    "restore": "Restore",
+    "import": "Import"
+  },
+  "emptyTitle": "No activity logs found",
+  "emptyDescription": "Actions performed in the application will appear here.",
+  "searchPlaceholder": "Search activity logs…",
+  "filterAction": "All actions",
+  "filterActor": "All users",
+  "loadFailed": "Could not load activity logs.",
+  "unknownActor": "Unknown user",
+  "system": "System",
+  "noActivityTitle": "No activity recorded",
+  "noActivityDescription": "Actions across the platform will appear here."
+}

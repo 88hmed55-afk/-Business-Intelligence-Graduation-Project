@@ -143,3 +143,35 @@ def test_export_rejects_oversized_payload():
         service.export(
             report_type="test", rows=rows, format=ReportExportFormat.CSV, title="Too big"
         )
+
+
+def test_export_csv_has_utf8_bom_for_arabic_support():
+    service = ExportService()
+    rows = [{"customer": "عميل تجريبي", "total": 1500.5}]
+    content_type, content, filename = service.export(
+        report_type="customers",
+        rows=rows,
+        format=ReportExportFormat.CSV,
+        title="تقرير العملاء",
+        language="ar",
+    )
+    assert content[:3] == b"\xef\xbb\xbf"
+    text = content[3:].decode("utf-8")
+    assert "عميل تجريبي" in text
+    assert filename.endswith(".csv")
+
+
+def test_export_pdf_embeds_arabic_font_when_requested():
+    service = ExportService()
+    rows = [{"customer": "عميل تجريبي", "total": 1500.5}]
+    content_type, content, filename = service.export(
+        report_type="customers",
+        rows=rows,
+        format=ReportExportFormat.PDF,
+        title="تقرير العملاء",
+        language="ar",
+    )
+    assert content_type == "application/pdf"
+    assert b"Amiri-Regular" in content or b"Amiri-Bold" in content
+    assert filename.endswith(".pdf")
+

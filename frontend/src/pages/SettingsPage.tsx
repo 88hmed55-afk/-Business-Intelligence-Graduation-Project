@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Loader2, Monitor, Moon, Save, Sun } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { PageHeader } from "@/components/common/PageHeader";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -14,13 +15,14 @@ import { useToast } from "@/components/ui/use-toast";
 import { authApi } from "@/features/auth/api";
 import { usersApi } from "@/features/users/api";
 import { useTheme } from "@/hooks/use-theme";
-import { ApiClientError } from "@/lib/api";
+import { getErrorMessage } from "@/lib/error-messages";
 import { cn, initials, toTitleCase } from "@/lib/utils";
 import { useAuthStore } from "@/stores/auth-store";
 import type { ThemeMode } from "@/stores/theme-store";
 
 export function SettingsPage() {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const { mode, setMode } = useTheme();
   const user = useAuthStore((state) => state.user);
   const setUser = useAuthStore((state) => state.setUser);
@@ -37,12 +39,12 @@ export function SettingsPage() {
     mutationFn: () => usersApi.updateMe({ full_name: fullName, username, email }),
     onSuccess: (updated) => {
       setUser(updated);
-      toast({ title: "Profile updated", variant: "success" });
+      toast({ title: t("profile:toasts.profileUpdated"), variant: "success" });
     },
     onError: (error: unknown) => {
       toast({
-        title: "Could not update profile",
-        description: error instanceof ApiClientError ? error.message : "Unexpected error",
+        title: t("profile:toasts.profileFailed"),
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     },
@@ -54,29 +56,29 @@ export function SettingsPage() {
       setOldPassword("");
       setNewPassword("");
       setConfirmPassword("");
-      toast({ title: "Password updated", variant: "success" });
+      toast({ title: t("profile:toasts.passwordUpdated"), variant: "success" });
     },
     onError: (error: unknown) => {
       toast({
-        title: "Could not update password",
-        description: error instanceof ApiClientError ? error.message : "Unexpected error",
+        title: t("profile:toasts.passwordFailed"),
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     },
   });
 
   const themeOptions: Array<{ value: ThemeMode; label: string; icon: React.ReactNode }> = [
-    { value: "light", label: "Light", icon: <Sun className="h-4 w-4" /> },
-    { value: "dark", label: "Dark", icon: <Moon className="h-4 w-4" /> },
-    { value: "system", label: "System", icon: <Monitor className="h-4 w-4" /> },
+    { value: "light", label: t("auth:settings.themeLight"), icon: <Sun className="h-4 w-4" /> },
+    { value: "dark", label: t("auth:settings.themeDark"), icon: <Moon className="h-4 w-4" /> },
+    { value: "system", label: t("auth:settings.themeSystem"), icon: <Monitor className="h-4 w-4" /> },
   ];
 
   const handlePasswordSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     if (newPassword !== confirmPassword) {
       toast({
-        title: "Passwords do not match",
-        description: "Please make sure both password fields match.",
+        title: t("validation.passwordMismatch"),
+        description: t("auth:settings.passwordMismatchDescription"),
         variant: "destructive",
       });
       return;
@@ -86,13 +88,13 @@ export function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Settings" description="Manage your profile, password and preferences" />
+      <PageHeader title={t("settings:title")} description={t("settings:description")} />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <Card className="glass-card lg:col-span-2">
           <CardHeader>
-            <CardTitle>Profile</CardTitle>
-            <CardDescription>Update your personal information</CardDescription>
+            <CardTitle>{t("profile:title")}</CardTitle>
+            <CardDescription>{t("profile:description")}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="mb-6 flex items-center gap-4">
@@ -115,7 +117,7 @@ export function SettingsPage() {
               className="space-y-4"
             >
               <div className="space-y-2">
-                <Label htmlFor="fullName">Full name</Label>
+                <Label htmlFor="fullName">{t("profile:fields.fullName")}</Label>
                 <Input
                   id="fullName"
                   value={fullName}
@@ -125,7 +127,7 @@ export function SettingsPage() {
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="username">Username</Label>
+                  <Label htmlFor="username">{t("profile:fields.username")}</Label>
                   <Input
                     id="username"
                     value={username}
@@ -135,7 +137,7 @@ export function SettingsPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">{t("profile:fields.email")}</Label>
                   <Input
                     id="email"
                     type="email"
@@ -151,7 +153,7 @@ export function SettingsPage() {
                 ) : (
                   <Save className="h-4 w-4" />
                 )}
-                Save profile
+                {t("profile:actions.updateProfile")}
               </Button>
             </form>
           </CardContent>
@@ -159,8 +161,8 @@ export function SettingsPage() {
 
         <Card className="glass-card">
           <CardHeader>
-            <CardTitle>Appearance</CardTitle>
-            <CardDescription>Choose how Nova BI looks</CardDescription>
+            <CardTitle>{t("auth:settings.appearanceTitle")}</CardTitle>
+            <CardDescription>{t("auth:settings.appearanceDescription")}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-3 gap-2">
@@ -187,13 +189,13 @@ export function SettingsPage() {
 
       <Card className="glass-card">
         <CardHeader>
-          <CardTitle>Change password</CardTitle>
-          <CardDescription>Update the password for your account</CardDescription>
+          <CardTitle>{t("profile:actions.changePassword")}</CardTitle>
+          <CardDescription>{t("auth:settings.changePasswordDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handlePasswordSubmit} className="max-w-md space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="oldPassword">Current password</Label>
+              <Label htmlFor="oldPassword">{t("profile:fields.currentPassword")}</Label>
               <Input
                 id="oldPassword"
                 type="password"
@@ -205,7 +207,7 @@ export function SettingsPage() {
             <Separator />
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="newPassword">New password</Label>
+                <Label htmlFor="newPassword">{t("profile:fields.newPassword")}</Label>
                 <Input
                   id="newPassword"
                   type="password"
@@ -216,7 +218,7 @@ export function SettingsPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm new password</Label>
+                <Label htmlFor="confirmPassword">{t("profile:fields.confirmNewPassword")}</Label>
                 <Input
                   id="confirmPassword"
                   type="password"
@@ -229,7 +231,7 @@ export function SettingsPage() {
             </div>
             <Button type="submit" variant="secondary" disabled={passwordMutation.isPending}>
               {passwordMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-              Update password
+              {t("auth:resetPassword.updatePassword")}
             </Button>
           </form>
         </CardContent>

@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -21,20 +22,14 @@ import {
   type CustomerCreatePayload,
   type CustomerUpdatePayload,
 } from "@/features/customers/api";
-import { ApiClientError } from "@/lib/api";
+import i18n from "@/i18n";
+import { getErrorMessage } from "@/lib/error-messages";
 import type { Customer, CustomerStatus } from "@/types";
 
-const customerStatusOptions: Array<{ value: string; label: string }> = [
-  { value: "active", label: "Active" },
-  { value: "inactive", label: "Inactive" },
-  { value: "vip", label: "VIP" },
-  { value: "prospect", label: "Prospect" },
-];
-
 const schema = z.object({
-  first_name: z.string().min(1, "First name is required").max(100),
-  last_name: z.string().min(1, "Last name is required").max(100),
-  email: z.union([z.literal(""), z.string().email("Invalid email")]),
+  first_name: z.string().min(1, { error: () => i18n.t("validation.required") }).max(100),
+  last_name: z.string().min(1, { error: () => i18n.t("validation.required") }).max(100),
+  email: z.union([z.literal(""), z.string().email({ error: () => i18n.t("validation.invalidEmail") })]),
   phone: z.string().max(50).optional().or(z.literal("")),
   company: z.string().max(255).optional().or(z.literal("")),
   address: z.string().max(2000).optional().or(z.literal("")),
@@ -54,6 +49,14 @@ interface CustomerDialogProps {
 
 export function CustomerDialog({ open, onOpenChange, customer }: CustomerDialogProps) {
   const { toast } = useToast();
+  const { t } = useTranslation();
+
+  const customerStatusOptions = [
+    { value: "active", label: t("statuses.active") },
+    { value: "inactive", label: t("statuses.inactive") },
+    { value: "vip", label: t("statuses.vip") },
+    { value: "prospect", label: t("statuses.prospect") },
+  ];
 
   const form = useForm<CustomerFormValues>({
     resolver: zodResolver(schema),
@@ -91,13 +94,13 @@ export function CustomerDialog({ open, onOpenChange, customer }: CustomerDialogP
   const createMutation = useMutation({
     mutationFn: (payload: CustomerCreatePayload) => customersApi.create(payload),
     onSuccess: () => {
-      toast({ title: "Customer created", variant: "success" });
+      toast({ title: t("customers:createdToast"), variant: "success" });
       onOpenChange(false);
     },
     onError: (error: unknown) => {
       toast({
-        title: "Could not create customer",
-        description: error instanceof ApiClientError ? error.message : "Unexpected error",
+        title: t("customers:createFailedToast"),
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     },
@@ -107,13 +110,13 @@ export function CustomerDialog({ open, onOpenChange, customer }: CustomerDialogP
     mutationFn: ({ id, payload }: { id: string; payload: CustomerUpdatePayload }) =>
       customersApi.update(id, payload),
     onSuccess: () => {
-      toast({ title: "Customer updated", variant: "success" });
+      toast({ title: t("customers:updatedToast"), variant: "success" });
       onOpenChange(false);
     },
     onError: (error: unknown) => {
       toast({
-        title: "Could not update customer",
-        description: error instanceof ApiClientError ? error.message : "Unexpected error",
+        title: t("customers:updateFailedToast"),
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     },
@@ -145,22 +148,22 @@ export function CustomerDialog({ open, onOpenChange, customer }: CustomerDialogP
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{customer ? "Edit customer" : "Create customer"}</DialogTitle>
+          <DialogTitle>{customer ? t("customers:edit") : t("customers:create")}</DialogTitle>
           <DialogDescription>
-            {customer ? "Update this customer's details." : "Add a new customer to your directory."}
+            {customer ? t("customers:editDescription") : t("customers:createDescription")}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormInput
-              label="First name"
+              label={t("customers:fields.firstName")}
               required
               value={form.watch("first_name")}
               onChange={(v) => form.setValue("first_name", v, { shouldValidate: true })}
               error={form.formState.errors.first_name?.message}
             />
             <FormInput
-              label="Last name"
+              label={t("customers:fields.lastName")}
               required
               value={form.watch("last_name")}
               onChange={(v) => form.setValue("last_name", v, { shouldValidate: true })}
@@ -169,62 +172,62 @@ export function CustomerDialog({ open, onOpenChange, customer }: CustomerDialogP
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormInput
-              label="Email"
+              label={t("customers:fields.email")}
               type="email"
               value={form.watch("email")}
               onChange={(v) => form.setValue("email", v, { shouldValidate: true })}
               error={form.formState.errors.email?.message}
             />
             <FormInput
-              label="Phone"
+              label={t("customers:fields.phone")}
               value={form.watch("phone")}
               onChange={(v) => form.setValue("phone", v)}
             />
           </div>
           <FormInput
-            label="Company"
+            label={t("customers:fields.company")}
             value={form.watch("company")}
             onChange={(v) => form.setValue("company", v)}
           />
           <FormTextarea
-            label="Address"
+            label={t("customers:fields.address")}
             rows={2}
             value={form.watch("address")}
             onChange={(v) => form.setValue("address", v)}
           />
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormInput
-              label="City"
+              label={t("customers:fields.city")}
               value={form.watch("city")}
               onChange={(v) => form.setValue("city", v)}
             />
             <FormInput
-              label="Country"
+              label={t("customers:fields.country")}
               value={form.watch("country")}
               onChange={(v) => form.setValue("country", v)}
             />
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormSelect
-              label="Status"
+              label={t("customers:fields.status")}
               control={form.control}
               name="status"
               options={customerStatusOptions}
             />
           </div>
           <FormTextarea
-            label="Notes"
+            label={t("customers:fields.notes")}
             rows={3}
             value={form.watch("notes")}
             onChange={(v) => form.setValue("notes", v)}
           />
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
-              Cancel
+              {t("actions.cancel")}
             </Button>
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-              {customer ? "Save changes" : "Create customer"}
+              {customer ? t("actions.save") : t("customers:create")}
             </Button>
           </DialogFooter>
         </form>

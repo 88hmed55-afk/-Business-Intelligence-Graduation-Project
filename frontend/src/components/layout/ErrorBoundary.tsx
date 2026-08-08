@@ -2,6 +2,7 @@ import { Component, type ErrorInfo, type ReactNode } from "react";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import i18n from "@/i18n";
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -35,14 +36,14 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
             <AlertTriangle className="h-7 w-7" />
           </div>
           <div className="space-y-1">
-            <h2 className="text-lg font-semibold">Something went wrong</h2>
+            <h2 className="text-lg font-semibold">{i18n.t("states.somethingWentWrong")}</h2>
             <p className="max-w-md text-sm text-muted-foreground">
-              {this.state.message || "An unexpected error occurred while rendering this view."}
+              {this.state.message || i18n.t("nav:states.renderError")}
             </p>
           </div>
           <Button onClick={this.handleReset} variant="outline">
             <RefreshCw className="h-4 w-4" />
-            Reload view
+            {i18n.t("nav:actions.reloadView")}
           </Button>
         </div>
       );

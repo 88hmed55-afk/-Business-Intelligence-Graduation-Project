@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Archive, FileText, PenLine, Plus, Search, Send, Trash2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { DataPagination } from "@/components/common/DataPagination";
@@ -35,8 +36,8 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { ReportDialog } from "@/features/reports/ReportDialog";
 import { reportsApi } from "@/features/reports/api";
-import { ApiClientError } from "@/lib/api";
-import { cn, formatDateShort, toTitleCase } from "@/lib/utils";
+import { getErrorMessage } from "@/lib/error-messages";
+import { cn, formatDateShort } from "@/lib/utils";
 import type { Report, ReportStatus } from "@/types";
 
 const PAGE_SIZE = 10;
@@ -47,7 +48,15 @@ const statusVariant: Record<ReportStatus, "success" | "secondary" | "outline"> =
   archived: "outline",
 };
 
+const statusOptions: Array<{ value: ReportStatus | "all"; label: string }> = [
+  { value: "all", label: "allStatuses" },
+  { value: "draft", label: "statuses.draft" },
+  { value: "published", label: "statuses.published" },
+  { value: "archived", label: "statuses.archived" },
+];
+
 export function ReportsPage() {
+  const { t } = useTranslation();
   const { toast } = useToast();
 
   const [page, setPage] = useState(1);
@@ -80,12 +89,12 @@ export function ReportsPage() {
   const publishMutation = useMutation({
     mutationFn: (id: string) => reportsApi.publish(id),
     onSuccess: () => {
-      toast({ title: "Report published", variant: "success" });
+      toast({ title: t("reports:publishedToast"), variant: "success" });
     },
     onError: (error: unknown) => {
       toast({
-        title: "Could not publish report",
-        description: error instanceof ApiClientError ? error.message : "Unexpected error",
+        title: t("reports:publishFailedToast"),
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     },
@@ -94,12 +103,12 @@ export function ReportsPage() {
   const archiveMutation = useMutation({
     mutationFn: (id: string) => reportsApi.archive(id),
     onSuccess: () => {
-      toast({ title: "Report archived", variant: "success" });
+      toast({ title: t("reports:archivedToast"), variant: "success" });
     },
     onError: (error: unknown) => {
       toast({
-        title: "Could not archive report",
-        description: error instanceof ApiClientError ? error.message : "Unexpected error",
+        title: t("reports:archiveFailedToast"),
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     },
@@ -108,25 +117,25 @@ export function ReportsPage() {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => reportsApi.remove(id),
     onSuccess: () => {
-      toast({ title: "Report deleted", variant: "success" });
+      toast({ title: t("reports:deletedToast"), variant: "success" });
       setDeleting(null);
     },
     onError: (error: unknown) => {
       toast({
-        title: "Could not delete report",
-        description: error instanceof ApiClientError ? error.message : "Unexpected error",
+        title: t("reports:deleteFailedToast"),
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     },
   });
 
   if (isError) {
-    return <ErrorState message="Could not load reports." onRetry={() => void refetch()} />;
+    return <ErrorState message={t("reports:loadFailed")} onRetry={() => void refetch()} />;
   }
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Reports" description="Manage report definitions and their status">
+      <PageHeader title={t("reports:title")} description={t("reports:savedDescription")}>
         <Button
           onClick={() => {
             setEditing(null);
@@ -134,16 +143,16 @@ export function ReportsPage() {
           }}
         >
           <Plus className="h-4 w-4" />
-          New report
+          {t("reports:add")}
         </Button>
       </PageHeader>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative max-w-sm flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            className="pl-9"
-            placeholder="Search reports…"
+            className="ps-9"
+            placeholder={t("reports:searchPlaceholder")}
             value={search}
             onChange={(event) => setSearch(event.target.value)}
           />
@@ -156,13 +165,14 @@ export function ReportsPage() {
           }}
         >
           <SelectTrigger className="w-full sm:w-44">
-            <SelectValue placeholder="Filter by status" />
+            <SelectValue placeholder={t("reports:filterStatus")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All statuses</SelectItem>
-            <SelectItem value="draft">Draft</SelectItem>
-            <SelectItem value="published">Published</SelectItem>
-            <SelectItem value="archived">Archived</SelectItem>
+            {statusOptions.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {t(`reports:${option.label}`)}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
@@ -175,20 +185,20 @@ export function ReportsPage() {
         </div>
       ) : (data?.items.length ?? 0) === 0 ? (
         <EmptyState
-          title="No reports found"
-          description="Create your first report to start analyzing your data."
+          title={t("reports:noSavedTitle")}
+          description={t("reports:noSavedDescription")}
         />
       ) : (
         <div className="rounded-xl border">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Schedule</TableHead>
-                <TableHead>Updated</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>{t("reports:table.name")}</TableHead>
+                <TableHead>{t("labels.description")}</TableHead>
+                <TableHead>{t("reports:table.status")}</TableHead>
+                <TableHead>{t("reports:table.schedule")}</TableHead>
+                <TableHead>{t("reports:table.updated")}</TableHead>
+                <TableHead className="text-end">{t("labels.actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -204,7 +214,9 @@ export function ReportsPage() {
                     {report.description || "—"}
                   </TableCell>
                   <TableCell>
-                    <Badge variant={statusVariant[report.status]}>{toTitleCase(report.status)}</Badge>
+                    <Badge variant={statusVariant[report.status]}>
+                      {t(`reports:statuses.${report.status}`)}
+                    </Badge>
                   </TableCell>
                   <TableCell className="text-muted-foreground">
                     {report.schedule ? (
@@ -216,11 +228,11 @@ export function ReportsPage() {
                   <TableCell className="text-muted-foreground">
                     {formatDateShort(report.updated_at)}
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-end">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <span className="sr-only">Actions</span>
+                          <span className="sr-only">{t("labels.actions")}</span>
                           <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
                             <circle cx="12" cy="5" r="1.5" />
                             <circle cx="12" cy="12" r="1.5" />
@@ -236,18 +248,18 @@ export function ReportsPage() {
                           }}
                         >
                           <PenLine />
-                          Edit
+                          {t("actions.edit")}
                         </DropdownMenuItem>
                         {report.status !== "published" && (
                           <DropdownMenuItem onClick={() => publishMutation.mutate(report.id)}>
                             <Send />
-                            Publish
+                            {t("reports:publish")}
                           </DropdownMenuItem>
                         )}
                         {report.status !== "archived" && (
                           <DropdownMenuItem onClick={() => archiveMutation.mutate(report.id)}>
                             <Archive />
-                            Archive
+                            {t("reports:archive")}
                           </DropdownMenuItem>
                         )}
                         <DropdownMenuItem
@@ -255,7 +267,7 @@ export function ReportsPage() {
                           className="text-destructive focus:text-destructive"
                         >
                           <Trash2 />
-                          Delete
+                          {t("actions.delete")}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -283,9 +295,9 @@ export function ReportsPage() {
           if (!open) setDeleting(null);
         }}
         onConfirm={() => (deleting ? deleteMutation.mutateAsync(deleting.id) : Promise.resolve())}
-        title="Delete report"
-        description={deleting ? `Are you sure you want to delete "${deleting.name}"?` : undefined}
-        confirmLabel="Delete"
+        title={t("reports:deleteConfirmTitle")}
+        description={deleting ? t("reports:deleteConfirmDescription", { name: deleting.name }) : undefined}
+        confirmLabel={t("actions.delete")}
       />
     </div>
   );

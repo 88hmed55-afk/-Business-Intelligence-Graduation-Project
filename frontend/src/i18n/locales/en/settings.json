@@ -1,0 +1,65 @@
+{
+  "title": "Settings",
+  "description": "Manage application settings and company information.",
+  "add": "New setting",
+  "create": "Add setting",
+  "edit": "Edit setting",
+  "delete": "Delete setting",
+  "deleteConfirmTitle": "Delete setting",
+  "deleteConfirmDescription": "Are you sure you want to delete the setting \"{{name}}\"?",
+  "refreshStats": "Refresh statistics",
+  "statsRefreshed": "Statistics refreshed",
+  "metricsUpdated": "{{count}} metrics updated",
+  "statsRefreshFailed": "Could not refresh statistics",
+  "createFailedToast": "Could not create setting",
+  "updateFailedToast": "Could not update setting",
+  "editWithKey": "Edit setting: {{key}}",
+  "createTitle": "Create setting",
+  "editTitle": "Edit setting",
+  "editDescription": "Update this setting's value.",
+  "createDescription": "Add a new application setting.",
+  "public": "Public",
+  "private": "Private",
+  "fields": {
+    "key": "Key",
+    "value": "Value",
+    "valueJson": "Value (JSON)",
+    "group": "Group",
+    "description": "Description",
+    "isPublic": "Public",
+    "type": "Type"
+  },
+  "json": {
+    "invalid": "Invalid JSON",
+    "notObject": "Value must be a JSON object"
+  },
+  "themes": {
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "groups": {
+    "company": "Company",
+    "general": "General",
+    "notifications": "Notifications",
+    "security": "Security",
+    "billing": "Billing",
+    "reports": "Reports"
+  },
+  "table": {
+    "setting": "Setting",
+    "group": "Group",
+    "value": "Value",
+    "updated": "Updated",
+    "actions": "Actions"
+  },
+  "emptyTitle": "No settings found",
+  "emptyDescription": "Application settings will appear here.",
+  "searchPlaceholder": "Search settings…",
+  "filterGroup": "All groups",
+  "createdToast": "Setting created successfully.",
+  "updatedToast": "Setting updated successfully.",
+  "deletedToast": "Setting deleted successfully.",
+  "deleteFailedToast": "Could not delete setting",
+  "loadFailed": "Could not load settings."
+}

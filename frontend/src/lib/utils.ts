@@ -1,20 +1,30 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
+import i18n from "@/i18n";
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+function getLocale(): string {
+  return i18n.language === "ar" ? "ar-EG" : "en-US";
+}
+
+function getPercentSymbol(): string {
+  return i18n.language === "ar" ? "٪" : "%";
+}
+
 export function formatNumber(value: number | null | undefined, digits = 1): string {
   if (value === null || value === undefined || Number.isNaN(value)) return "—";
-  return new Intl.NumberFormat("en-US", {
+  return new Intl.NumberFormat(getLocale(), {
     maximumFractionDigits: digits,
   }).format(value);
 }
 
 export function formatCompact(value: number | null | undefined): string {
   if (value === null || value === undefined || Number.isNaN(value)) return "—";
-  return new Intl.NumberFormat("en-US", {
+  return new Intl.NumberFormat(getLocale(), {
     notation: "compact",
     maximumFractionDigits: 1,
   }).format(value);
@@ -24,7 +34,7 @@ export function formatDate(value: string | null | undefined): string {
   if (!value) return "—";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "—";
-  return new Intl.DateTimeFormat("en-US", {
+  return new Intl.DateTimeFormat(getLocale(), {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(date);
@@ -34,7 +44,7 @@ export function formatDateShort(value: string | null | undefined): string {
   if (!value) return "—";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "—";
-  return new Intl.DateTimeFormat("en-US", {
+  return new Intl.DateTimeFormat(getLocale(), {
     dateStyle: "medium",
   }).format(date);
 }
@@ -68,7 +78,7 @@ export function formatCurrency(
   currency = "USD",
 ): string {
   const num = parseNum(value);
-  return new Intl.NumberFormat("en-US", {
+  return new Intl.NumberFormat(getLocale(), {
     style: "currency",
     currency,
     maximumFractionDigits: 2,
@@ -77,7 +87,9 @@ export function formatCurrency(
 
 export function formatPercent(value: string | number | null | undefined, digits = 1): string {
   const num = parseNum(value);
-  return `${num.toFixed(digits)}%`;
+  return `${new Intl.NumberFormat(getLocale(), {
+    maximumFractionDigits: digits,
+  }).format(num)}${getPercentSymbol()}`;
 }
 
 export function formatDateInput(value: string | null | undefined): string {

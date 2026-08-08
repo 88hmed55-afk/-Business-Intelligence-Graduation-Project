@@ -1,0 +1,35 @@
+{
+  "title": "Notifications",
+  "description": "Stay up to date with alerts and activity across your business.",
+  "markAllRead": "Mark all read",
+  "emptyTitle": "No notifications",
+  "emptyDescription": "You are all caught up.",
+  "loadFailed": "Could not load notifications.",
+  "readToast": "Notification marked as read.",
+  "readAllToast": "All notifications marked as read.",
+  "markReadFailed": "Could not update notifications.",
+  "updateFailed": "Could not update notification",
+  "unreadCount": "{{count}} unread",
+  "types": {
+    "info": "Info",
+    "success": "Success",
+    "warning": "Warning",
+    "error": "Error"
+  },
+  "table": {
+    "notification": "Notification",
+    "type": "Type",
+    "date": "Date",
+    "status": "Status"
+  },
+  "statuses": {
+    "read": "Read",
+    "unread": "Unread"
+  },
+  "time": {
+    "justNow": "Just now",
+    "minutesAgo": "{{count}} min ago",
+    "hoursAgo": "{{count}} hr ago",
+    "daysAgo": "{{count}} day(s) ago"
+  }
+}

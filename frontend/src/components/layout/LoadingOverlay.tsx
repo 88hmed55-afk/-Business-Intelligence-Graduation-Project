@@ -1,12 +1,15 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface LoadingOverlayProps {
   open: boolean;
   label?: string;
 }
 
-export function LoadingOverlay({ open, label = "Loading…" }: LoadingOverlayProps) {
+export function LoadingOverlay({ open, label }: LoadingOverlayProps) {
+  const { t } = useTranslation();
+  const resolvedLabel = label ?? t("states.loading");
   return (
     <AnimatePresence>
       {open && (
@@ -23,7 +26,7 @@ export function LoadingOverlay({ open, label = "Loading…" }: LoadingOverlayPro
           >
             <Loader2 className="h-7 w-7 text-white" />
           </motion.div>
-          <p className="text-sm font-medium text-muted-foreground">{label}</p>
+          <p className="text-sm font-medium text-muted-foreground">{resolvedLabel}</p>
         </motion.div>
       )}
     </AnimatePresence>

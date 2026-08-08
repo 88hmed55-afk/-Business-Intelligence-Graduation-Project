@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { BarChart3, FileText } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { BusinessReportsPage } from "@/features/reports/BusinessReportsPage";
 import { ReportsPage } from "@/features/reports/ReportsPage";
@@ -8,6 +9,7 @@ import { cn } from "@/lib/utils";
 type Tab = "analytics" | "saved";
 
 export function ReportsIndex() {
+  const { t } = useTranslation();
   const [tab, setTab] = useState<Tab>("analytics");
 
   return (
@@ -15,8 +17,8 @@ export function ReportsIndex() {
       <div className="inline-flex rounded-lg border bg-muted/40 p-1">
         {(
           [
-            { key: "analytics", label: "Business analytics", icon: BarChart3 },
-            { key: "saved", label: "Saved reports", icon: FileText },
+            { key: "analytics", label: "reports:tabs.analytics", icon: BarChart3 },
+            { key: "saved", label: "reports:tabs.saved", icon: FileText },
           ] as const
         ).map((item) => (
           <button
@@ -31,7 +33,7 @@ export function ReportsIndex() {
             )}
           >
             <item.icon className="h-4 w-4" />
-            {item.label}
+            {t(item.label)}
           </button>
         ))}
       </div>

@@ -91,6 +91,38 @@
     scroll-behavior: smooth;
   }
 
+  /* Arabic (RTL): use Cairo and disable letter-spacing, which renders poorly
+     with Arabic script. */
+  [dir="rtl"],
+  [dir="rtl"] body {
+    font-family: "Cairo", "Inter", ui-sans-serif, system-ui, Tahoma, sans-serif;
+    letter-spacing: 0 !important;
+    word-spacing: 0.1em;
+  }
+
+  [dir="rtl"] .tracking-tight,
+  [dir="rtl"] .tracking-wider,
+  [dir="rtl"] .tracking-widest {
+    letter-spacing: 0 !important;
+  }
+
+  [dir="rtl"] .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Reverse Tailwind space-x-* spacing in RTL layouts. */
+  [dir="rtl"] [class*="space-x-"] > :not([hidden]) ~ :not([hidden]) {
+    --tw-space-x-reverse: 1;
+  }
+
+  /* Keep numeric cells (IDs, amounts, dates) LTR so they are not mirrored. */
+  [dir="rtl"] .ltr-nums,
+  [dir="rtl"] .tabular-nums {
+    direction: ltr;
+    unicode-bidi: isolate;
+    text-align: start;
+  }
+
   ::selection {
     @apply bg-primary/20 text-primary;
   }

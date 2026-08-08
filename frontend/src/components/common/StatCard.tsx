@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { TrendingDown, TrendingUp } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { cn, formatCompact } from "@/lib/utils";
@@ -25,6 +26,7 @@ export function StatCard({
   className,
   children,
 }: StatCardProps) {
+  const { t } = useTranslation();
   const hasDelta = delta !== null && delta !== undefined && delta !== 0;
   const isPositive = (delta ?? 0) > 0;
 
@@ -43,7 +45,7 @@ export function StatCard({
           {children ?? (
             <span className="text-3xl font-bold tracking-tight">
               {formatCompact(value)}
-              {suffix && <span className="ml-1 text-lg font-semibold text-muted-foreground">{suffix}</span>}
+              {suffix && <span className="ms-1 text-lg font-semibold text-muted-foreground">{suffix}</span>}
             </span>
           )}
         </div>
@@ -63,7 +65,7 @@ export function StatCard({
                 ? `${deltaPercent.toFixed(1)}%`
                 : `${delta.toFixed(1)}`}
             </span>
-            <span className="text-muted-foreground">vs last period</span>
+            <span className="text-muted-foreground">{t("nav:stats.vsLastPeriod")}</span>
           </div>
         )}
       </CardContent>

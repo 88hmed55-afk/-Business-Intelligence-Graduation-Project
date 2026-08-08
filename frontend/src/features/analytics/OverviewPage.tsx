@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { BarChart3, Gauge, Layers, FileText } from "lucide-react";
 import {
   Area,
@@ -23,6 +24,7 @@ import { analyticsApi } from "@/features/analytics/api";
 import { toTitleCase } from "@/lib/utils";
 
 export function OverviewPage() {
+  const { t } = useTranslation();
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["analytics", "overview"],
     queryFn: analyticsApi.overview,
@@ -36,7 +38,7 @@ export function OverviewPage() {
   if (isError) {
     return (
       <ErrorState
-        message="Could not load analytics overview."
+        message={t("bi:common.loadFailed")}
         onRetry={() => void refetch()}
       />
     );
@@ -53,8 +55,8 @@ export function OverviewPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Overview"
-        description="A high-level snapshot of your business intelligence platform"
+        title={t("bi:analytics.overview")}
+        description={t("bi:analytics.overviewSubtitle")}
       />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -64,11 +66,11 @@ export function OverviewPage() {
           ))
         ) : (
           <>
-            <StatCard title="KPIs Tracked" value={kpisMetric?.value} icon={<Gauge />} />
-            <StatCard title="Dashboards" value={dashboardsMetric?.value} icon={<Layers />} />
-            <StatCard title="Reports" value={reportsMetric?.value} icon={<FileText />} />
+            <StatCard title={t("bi:analytics.statCards.kpisTracked")} value={kpisMetric?.value} icon={<Gauge />} />
+            <StatCard title={t("bi:analytics.statCards.dashboards")} value={dashboardsMetric?.value} icon={<Layers />} />
+            <StatCard title={t("bi:analytics.statCards.reports")} value={reportsMetric?.value} icon={<FileText />} />
             <StatCard
-              title="Avg Achievement"
+              title={t("bi:analytics.statCards.avgAchievement")}
               value={achievementMetric?.value}
               delta={achievementMetric?.delta}
               deltaPercent={achievementMetric?.delta_percent}
@@ -82,8 +84,8 @@ export function OverviewPage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <Card className="glass-card lg:col-span-2">
           <CardHeader>
-            <CardTitle>KPI Achievement Trend</CardTitle>
-            <CardDescription>Average achievement percentage over the last months</CardDescription>
+            <CardTitle>{t("bi:analytics.achievementTrend")}</CardTitle>
+            <CardDescription>{t("bi:analytics.achievementTrendDescription")}</CardDescription>
           </CardHeader>
           <CardContent>
             {isLoading ? (
@@ -118,7 +120,7 @@ export function OverviewPage() {
                       tickFormatter={(value: number) => `${value}%`}
                     />
                     <Tooltip
-                      formatter={(value: unknown) => [`${value}%`, "Achievement"]}
+                      formatter={(value: unknown) => [`${value}%`, t("bi:analytics.achievement")]}
                       contentStyle={{
                         borderRadius: 12,
                         border: "1px solid hsl(var(--border))",
@@ -141,8 +143,8 @@ export function OverviewPage() {
 
         <Card className="glass-card">
           <CardHeader>
-            <CardTitle>Performance by Category</CardTitle>
-            <CardDescription>KPI distribution and achievement by category</CardDescription>
+            <CardTitle>{t("bi:analytics.performanceByCategory")}</CardTitle>
+            <CardDescription>{t("bi:analytics.performanceByCategoryDescription")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {isLoading ? (
@@ -152,7 +154,7 @@ export function OverviewPage() {
                 ))}
               </div>
             ) : (data?.categories?.length ?? 0) === 0 ? (
-              <p className="text-sm text-muted-foreground">No categories yet.</p>
+              <p className="text-sm text-muted-foreground">{t("bi:analytics.noCategoryData")}</p>
             ) : (
               data?.categories?.map((category) => (
                 <div key={category.category} className="space-y-1.5">
@@ -173,18 +175,18 @@ export function OverviewPage() {
       <Card className="glass-card">
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle>Top Performing KPIs</CardTitle>
-            <CardDescription>Latest achievement values across your KPIs</CardDescription>
+            <CardTitle>{t("bi:analytics.topPerformingKpis")}</CardTitle>
+            <CardDescription>{t("bi:analytics.topPerformingKpisDescription")}</CardDescription>
           </div>
           <Link to="/kpis" className="text-sm font-medium text-primary hover:underline">
-            View all
+            {t("actions.viewAll")}
           </Link>
         </CardHeader>
         <CardContent>
           {performance === undefined ? (
-            <LoadingState label="Loading performance…" />
+            <LoadingState label={t("bi:common.loading")} />
           ) : performance.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No KPI performance data yet.</p>
+            <p className="text-sm text-muted-foreground">{t("bi:analytics.noPerformanceData")}</p>
           ) : (
             <div className="divide-y">
               {performance.map((item) => (

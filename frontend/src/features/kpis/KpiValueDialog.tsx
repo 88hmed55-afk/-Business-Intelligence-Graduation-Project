@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -15,7 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { kpisApi } from "@/features/kpis/api";
-import { ApiClientError } from "@/lib/api";
+import { getErrorMessage } from "@/lib/error-messages";
 
 interface KpiValueDialogProps {
   open: boolean;
@@ -34,6 +35,7 @@ export function KpiValueDialog({
   currentValue,
   unit,
 }: KpiValueDialogProps) {
+  const { t } = useTranslation();
   const { toast } = useToast();
 
   const [value, setValue] = useState("");
@@ -47,13 +49,13 @@ export function KpiValueDialog({
   const mutation = useMutation({
     mutationFn: (next: string) => kpisApi.updateValue(kpiId, next),
     onSuccess: () => {
-      toast({ title: "KPI value recorded", variant: "success" });
+      toast({ title: t("kpis:valueSaved"), variant: "success" });
       onOpenChange(false);
     },
     onError: (error: unknown) => {
       toast({
-        title: "Could not update value",
-        description: error instanceof ApiClientError ? error.message : "Unexpected error",
+        title: t("kpis:updateValueFailed"),
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     },
@@ -69,13 +71,16 @@ export function KpiValueDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle>Record measurement</DialogTitle>
-          <DialogDescription>Update the current value for {kpiName}.</DialogDescription>
+          <DialogTitle>{t("kpis:values.recordMeasurement")}</DialogTitle>
+          <DialogDescription>
+            {t("kpis:values.updateCurrentFor", { name: kpiName })}
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="value">
-              Current value{unit ? ` (${unit})` : ""}
+              {t("kpis:values.currentValue")}
+              {unit ? ` (${unit})` : ""}
             </Label>
             <Input
               id="value"
@@ -95,11 +100,11 @@ export function KpiValueDialog({
               onClick={() => onOpenChange(false)}
               disabled={mutation.isPending}
             >
-              Cancel
+              {t("actions.cancel")}
             </Button>
             <Button type="submit" disabled={mutation.isPending}>
               {mutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-              Save value
+              {t("kpis:values.saveValue")}
             </Button>
           </DialogFooter>
         </form>

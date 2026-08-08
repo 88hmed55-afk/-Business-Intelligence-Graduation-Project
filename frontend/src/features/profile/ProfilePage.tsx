@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { KeyRound, Loader2, LogOut, ShieldCheck, UserRound } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
 import { PageHeader } from "@/components/common/PageHeader";
@@ -11,11 +12,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/components/ui/use-toast";
 import { FormInput } from "@/components/forms";
 import { authApi } from "@/features/auth/api";
-import { ApiClientError } from "@/lib/api";
+import { getErrorMessage } from "@/lib/error-messages";
 import { formatDate, initials, toTitleCase } from "@/lib/utils";
 import { useAuthStore } from "@/stores/auth-store";
 
 export function ProfilePage() {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
@@ -30,7 +32,7 @@ export function ProfilePage() {
     mutationFn: (payload: { old_password: string; new_password: string }) =>
       authApi.changePassword(payload),
     onSuccess: () => {
-      toast({ title: "Password changed", variant: "success" });
+      toast({ title: t("profile:toasts.passwordUpdated"), variant: "success" });
       setOldPassword("");
       setNewPassword("");
       setConfirmPassword("");
@@ -38,8 +40,8 @@ export function ProfilePage() {
     },
     onError: (error: unknown) => {
       toast({
-        title: "Could not change password",
-        description: error instanceof ApiClientError ? error.message : "Unexpected error",
+        title: t("profile:toasts.passwordFailed"),
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     },
@@ -48,11 +50,11 @@ export function ProfilePage() {
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     if (newPassword !== confirmPassword) {
-      setPasswordError("Passwords do not match");
+      setPasswordError(t("profile:toasts.passwordMismatch"));
       return;
     }
     if (newPassword.length < 8) {
-      setPasswordError("New password must be at least 8 characters");
+      setPasswordError(t("validation.passwordTooShort", { length: 8 }));
       return;
     }
     setPasswordError("");
@@ -66,16 +68,16 @@ export function ProfilePage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="My profile" description="View your account details and security settings." />
+      <PageHeader title={t("profile:title")} description={t("profile:description")} />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <UserRound className="h-5 w-5 text-primary" />
-              Account
+              {t("profile:accountTitle")}
             </CardTitle>
-            <CardDescription>Your account information.</CardDescription>
+            <CardDescription>{t("profile:accountDescription")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center gap-4">
@@ -90,35 +92,41 @@ export function ProfilePage() {
             </div>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="rounded-lg border p-3">
-                <p className="text-xs text-muted-foreground">Role</p>
-                <p className="mt-0.5 font-medium">{user ? toTitleCase(user.role) : "—"}</p>
+                <p className="text-xs text-muted-foreground">{t("profile:fields.role")}</p>
+                <p className="mt-0.5 font-medium">
+                  {user
+                    ? t("profile:roleBadge", {
+                        role: t(`roles.${user.role}`, { defaultValue: toTitleCase(user.role) }),
+                      })
+                    : "—"}
+                </p>
               </div>
               <div className="rounded-lg border p-3">
-                <p className="text-xs text-muted-foreground">Username</p>
+                <p className="text-xs text-muted-foreground">{t("profile:fields.username")}</p>
                 <p className="mt-0.5 font-medium">{user?.username ?? "—"}</p>
               </div>
               <div className="rounded-lg border p-3">
-                <p className="text-xs text-muted-foreground">Status</p>
+                <p className="text-xs text-muted-foreground">{t("labels.status")}</p>
                 <div className="mt-1">
                   <Badge variant={user?.is_active ? "success" : "destructive"}>
-                    {user?.is_active ? "Active" : "Inactive"}
+                    {user?.is_active ? t("statuses.active") : t("statuses.inactive")}
                   </Badge>
                 </div>
               </div>
               <div className="rounded-lg border p-3">
-                <p className="text-xs text-muted-foreground">Last login</p>
+                <p className="text-xs text-muted-foreground">{t("profile:lastLogin")}</p>
                 <p className="mt-0.5 font-medium">{formatDate(user?.last_login_at ?? null)}</p>
               </div>
             </div>
             {user?.is_superuser && (
               <div className="flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/5 p-3 text-sm">
                 <ShieldCheck className="h-4 w-4 text-primary" />
-                Superuser — full platform access
+                {t("profile:superuserBadge")}
               </div>
             )}
             <Button variant="outline" className="w-full text-destructive hover:text-destructive" onClick={handleLogout}>
               <LogOut className="h-4 w-4" />
-              Sign out
+              {t("profile:signOut")}
             </Button>
           </CardContent>
         </Card>
@@ -127,28 +135,28 @@ export function ProfilePage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <KeyRound className="h-5 w-5 text-primary" />
-              Change password
+              {t("profile:actions.changePassword")}
             </CardTitle>
-            <CardDescription>Update the password for your account.</CardDescription>
+            <CardDescription>{t("profile:changePasswordDescription")}</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <FormInput
-                label="Current password"
+                label={t("profile:fields.currentPassword")}
                 required
                 type="password"
                 value={oldPassword}
                 onChange={(value) => setOldPassword(value)}
               />
               <FormInput
-                label="New password"
+                label={t("profile:fields.newPassword")}
                 required
                 type="password"
                 value={newPassword}
                 onChange={(value) => setNewPassword(value)}
               />
               <FormInput
-                label="Confirm new password"
+                label={t("profile:fields.confirmNewPassword")}
                 required
                 type="password"
                 value={confirmPassword}
@@ -157,7 +165,7 @@ export function ProfilePage() {
               />
               <Button type="submit" disabled={changePasswordMutation.isPending}>
                 {changePasswordMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-                Update password
+                {t("profile:actions.updatePassword")}
               </Button>
             </form>
           </CardContent>

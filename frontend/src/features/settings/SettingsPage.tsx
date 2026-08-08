@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { KeyRound, Monitor, Moon, PenLine, Plus, RefreshCw, Settings2, Sun, Trash2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { DataPagination } from "@/components/common/DataPagination";
@@ -26,13 +27,14 @@ import { SettingDialog } from "@/features/settings/SettingDialog";
 import { settingsApi } from "@/features/settings/api";
 import { statisticsApi } from "@/features/reports/api";
 import { useTheme } from "@/hooks/use-theme";
-import { ApiClientError } from "@/lib/api";
+import { getErrorMessage } from "@/lib/error-messages";
 import { cn, formatDateShort } from "@/lib/utils";
 import type { AppSetting } from "@/types";
 
 const PAGE_SIZE = 10;
 
 export function SettingsPage() {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const { mode, setMode } = useTheme();
 
@@ -67,15 +69,15 @@ export function SettingsPage() {
     mutationFn: () => statisticsApi.refresh(),
     onSuccess: (result) => {
       toast({
-        title: "Statistics refreshed",
-        description: `${Object.keys(result.metrics ?? {}).length} metrics updated`,
+        title: t("settings:statsRefreshed"),
+        description: t("settings:metricsUpdated", { count: Object.keys(result.metrics ?? {}).length }),
         variant: "success",
       });
     },
     onError: (error: unknown) => {
       toast({
-        title: "Could not refresh statistics",
-        description: error instanceof ApiClientError ? error.message : "Unexpected error",
+        title: t("settings:statsRefreshFailed"),
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     },
@@ -84,20 +86,20 @@ export function SettingsPage() {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => settingsApi.remove(id),
     onSuccess: () => {
-      toast({ title: "Setting deleted", variant: "success" });
+      toast({ title: t("settings:deletedToast"), variant: "success" });
       setDeleting(null);
     },
     onError: (error: unknown) => {
       toast({
-        title: "Could not delete setting",
-        description: error instanceof ApiClientError ? error.message : "Unexpected error",
+        title: t("settings:deleteFailedToast"),
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     },
   });
 
   if (isError) {
-    return <ErrorState message="Could not load settings." onRetry={() => void refetch()} />;
+    return <ErrorState message={t("settings:loadFailed")} onRetry={() => void refetch()} />;
   }
 
   const settings = data?.items ?? [];
@@ -106,8 +108,8 @@ export function SettingsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Settings"
-        description="Manage application settings and key-value configuration."
+        title={t("settings:title")}
+        description={t("settings:description")}
       >
         <Button
           variant="outline"
@@ -115,7 +117,7 @@ export function SettingsPage() {
           onClick={() => refreshStatsMutation.mutate()}
         >
           <RefreshCw className={cn("h-4 w-4", refreshStatsMutation.isPending && "animate-spin")} />
-          Refresh statistics
+          {t("settings:refreshStats")}
         </Button>
         <Button
           onClick={() => {
@@ -124,16 +126,16 @@ export function SettingsPage() {
           }}
         >
           <Plus className="h-4 w-4" />
-          New setting
+          {t("settings:add")}
         </Button>
       </PageHeader>
 
       <div className="grid grid-cols-3 gap-2 sm:max-w-xs">
         {(
           [
-            { value: "light", label: "Light", icon: Sun },
-            { value: "dark", label: "Dark", icon: Moon },
-            { value: "system", label: "System", icon: Monitor },
+            { value: "light", label: "settings:themes.light", icon: Sun },
+            { value: "dark", label: "settings:themes.dark", icon: Moon },
+            { value: "system", label: "settings:themes.system", icon: Monitor },
           ] as const
         ).map((option) => (
           <button
@@ -148,7 +150,7 @@ export function SettingsPage() {
             )}
           >
             <option.icon className="h-4 w-4" />
-            {option.label}
+            {t(option.label)}
           </button>
         ))}
       </div>
@@ -158,12 +160,12 @@ export function SettingsPage() {
           <input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search settings…"
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pl-9 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            placeholder={t("settings:searchPlaceholder")}
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 ps-9 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           />
           <svg
             viewBox="0 0 24 24"
-            className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+            className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
             fill="none"
             stroke="currentColor"
             strokeWidth="2"
@@ -181,13 +183,13 @@ export function SettingsPage() {
             }}
           >
             <SelectTrigger className="w-full sm:w-44">
-              <SelectValue placeholder="All groups" />
+              <SelectValue placeholder={t("settings:filterGroup")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All groups</SelectItem>
+              <SelectItem value="">{t("settings:filterGroup")}</SelectItem>
               {groups.map((item) => (
                 <SelectItem key={item} value={item}>
-                  {item}
+                  {t(`settings:groups.${item}`, { defaultValue: item })}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -205,19 +207,19 @@ export function SettingsPage() {
         ) : settings.length === 0 ? (
           <div className="p-12 text-center">
             <Settings2 className="mx-auto h-10 w-10 text-muted-foreground" />
-            <p className="mt-3 font-medium">No settings found</p>
-            <p className="text-sm text-muted-foreground">Try adjusting your search or filters.</p>
+            <p className="mt-3 font-medium">{t("settings:emptyTitle")}</p>
+            <p className="text-sm text-muted-foreground">{t("settings:emptyDescription")}</p>
           </div>
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b bg-muted/40 text-left text-xs text-muted-foreground">
-                <th className="px-4 py-3 font-medium">Key</th>
-                <th className="px-4 py-3 font-medium">Group</th>
-                <th className="px-4 py-3 font-medium">Value</th>
-                <th className="px-4 py-3 font-medium">Public</th>
-                <th className="px-4 py-3 font-medium">Updated</th>
-                <th className="px-4 py-3 text-right font-medium">Actions</th>
+              <tr className="border-b bg-muted/40 text-start text-xs text-muted-foreground">
+                <th className="px-4 py-3 font-medium">{t("settings:fields.key")}</th>
+                <th className="px-4 py-3 font-medium">{t("settings:table.group")}</th>
+                <th className="px-4 py-3 font-medium">{t("settings:fields.value")}</th>
+                <th className="px-4 py-3 font-medium">{t("settings:fields.isPublic")}</th>
+                <th className="px-4 py-3 font-medium">{t("settings:table.updated")}</th>
+                <th className="px-4 py-3 text-end font-medium">{t("labels.actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -237,17 +239,17 @@ export function SettingsPage() {
                   </td>
                   <td className="px-4 py-3">
                     <Badge variant={setting.is_public ? "success" : "secondary"}>
-                      {setting.is_public ? "Public" : "Private"}
+                      {setting.is_public ? t("settings:public") : t("settings:private")}
                     </Badge>
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">
                     {formatDateShort(setting.updated_at)}
                   </td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-4 py-3 text-end">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <span className="sr-only">Actions</span>
+                          <span className="sr-only">{t("labels.actions")}</span>
                           <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
                             <circle cx="12" cy="5" r="1.5" />
                             <circle cx="12" cy="12" r="1.5" />
@@ -263,14 +265,14 @@ export function SettingsPage() {
                           }}
                         >
                           <PenLine />
-                          Edit
+                          {t("actions.edit")}
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => setDeleting(setting)}
                           className="text-destructive focus:text-destructive"
                         >
                           <Trash2 />
-                          Delete
+                          {t("actions.delete")}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -298,9 +300,9 @@ export function SettingsPage() {
           if (!open) setDeleting(null);
         }}
         onConfirm={() => (deleting ? deleteMutation.mutateAsync(deleting.id) : Promise.resolve())}
-        title="Delete setting"
-        description={deleting ? `Are you sure you want to delete setting "${deleting.key}"?` : undefined}
-        confirmLabel="Delete"
+        title={t("settings:deleteConfirmTitle")}
+        description={deleting ? t("settings:deleteConfirmDescription", { name: deleting.key }) : undefined}
+        confirmLabel={t("actions.delete")}
       />
     </div>
   );

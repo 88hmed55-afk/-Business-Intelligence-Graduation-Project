@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { CreditCard, PenLine, Plus, Trash2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { DataPagination } from "@/components/common/DataPagination";
@@ -24,20 +25,12 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { PaymentDialog } from "@/features/payments/PaymentDialog";
 import { ordersApi, paymentsApi } from "@/features/orders/api";
-import { ApiClientError, fetchAllPages } from "@/lib/api";
+import { getErrorMessage } from "@/lib/error-messages";
+import { fetchAllPages } from "@/lib/api";
 import { cn, formatCurrency, formatDateShort, toTitleCase } from "@/lib/utils";
 import type { Payment, PaymentMethod, PaymentStatus } from "@/types";
 
 const PAGE_SIZE = 10;
-
-const methodLabel: Record<PaymentMethod, string> = {
-  credit_card: "Credit card",
-  debit_card: "Debit card",
-  bank_transfer: "Bank transfer",
-  cash: "Cash",
-  wallet: "Wallet",
-  paypal: "PayPal",
-};
 
 const statusVariant: Record<PaymentStatus, "success" | "warning" | "destructive" | "secondary"> = {
   pending: "warning",
@@ -47,7 +40,7 @@ const statusVariant: Record<PaymentStatus, "success" | "warning" | "destructive"
 };
 
 const methodOptions: Array<{ value: string; label: string }> = [
-  { value: "", label: "All methods" },
+  { value: "", label: "" },
   { value: "credit_card", label: "Credit card" },
   { value: "debit_card", label: "Debit card" },
   { value: "bank_transfer", label: "Bank transfer" },
@@ -57,6 +50,7 @@ const methodOptions: Array<{ value: string; label: string }> = [
 ];
 
 export function PaymentsPage() {
+  const { t } = useTranslation();
   const { toast } = useToast();
 
   const [page, setPage] = useState(1);
@@ -96,20 +90,20 @@ export function PaymentsPage() {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => paymentsApi.remove(id),
     onSuccess: () => {
-      toast({ title: "Payment deleted", variant: "success" });
+      toast({ title: t("payments:deletedToast"), variant: "success" });
       setDeleting(null);
     },
     onError: (error: unknown) => {
       toast({
-        title: "Could not delete payment",
-        description: error instanceof ApiClientError ? error.message : "Unexpected error",
+        title: t("payments:deleteFailedToast"),
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     },
   });
 
   if (isError) {
-    return <ErrorState message="Could not load payments." onRetry={() => void refetch()} />;
+    return <ErrorState message={t("payments:loadFailed")} onRetry={() => void refetch()} />;
   }
 
   const payments = data?.items ?? [];
@@ -117,8 +111,8 @@ export function PaymentsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Payments"
-        description="Record and track payments against orders."
+        title={t("payments:title")}
+        description={t("payments:description")}
       >
         <Button
           onClick={() => {
@@ -127,7 +121,7 @@ export function PaymentsPage() {
           }}
         >
           <Plus className="h-4 w-4" />
-          Record payment
+          {t("payments:create")}
         </Button>
       </PageHeader>
 
@@ -136,12 +130,12 @@ export function PaymentsPage() {
           <input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search payments…"
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pl-9 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            placeholder={t("payments:searchPlaceholder")}
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 ps-9 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           />
           <svg
             viewBox="0 0 24 24"
-            className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+            className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
             fill="none"
             stroke="currentColor"
             strokeWidth="2"
@@ -158,12 +152,14 @@ export function PaymentsPage() {
           }}
         >
           <SelectTrigger className="w-full sm:w-44">
-            <SelectValue placeholder="All methods" />
+            <SelectValue placeholder={t("payments:filterMethod")} />
           </SelectTrigger>
           <SelectContent>
             {methodOptions.map((option) => (
               <SelectItem key={option.value} value={option.value}>
-                {option.label}
+                {option.value === ""
+                  ? t("payments:filterMethod")
+                  : t("payments:methods." + option.value, { defaultValue: option.label })}
               </SelectItem>
             ))}
           </SelectContent>
@@ -180,20 +176,20 @@ export function PaymentsPage() {
         ) : payments.length === 0 ? (
           <div className="p-12 text-center">
             <CreditCard className="mx-auto h-10 w-10 text-muted-foreground" />
-            <p className="mt-3 font-medium">No payments found</p>
-            <p className="text-sm text-muted-foreground">Try adjusting your search or filters.</p>
+            <p className="mt-3 font-medium">{t("payments:emptyTitle")}</p>
+            <p className="text-sm text-muted-foreground">{t("payments:emptyDescription")}</p>
           </div>
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b bg-muted/40 text-left text-xs text-muted-foreground">
-                <th className="px-4 py-3 font-medium">Payment</th>
-                <th className="px-4 py-3 font-medium">Order</th>
-                <th className="px-4 py-3 font-medium">Method</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium">Amount</th>
-                <th className="px-4 py-3 font-medium">Paid at</th>
-                <th className="px-4 py-3 text-right font-medium">Actions</th>
+              <tr className="border-b bg-muted/40 text-start text-xs text-muted-foreground">
+                <th className="px-4 py-3 font-medium">{t("payments:table.payment")}</th>
+                <th className="px-4 py-3 font-medium">{t("payments:table.order")}</th>
+                <th className="px-4 py-3 font-medium">{t("payments:table.method")}</th>
+                <th className="px-4 py-3 font-medium">{t("payments:table.status")}</th>
+                <th className="px-4 py-3 font-medium">{t("payments:table.amount")}</th>
+                <th className="px-4 py-3 font-medium">{t("payments:fields.paymentDate")}</th>
+                <th className="px-4 py-3 text-end font-medium">{t("payments:table.actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -203,19 +199,23 @@ export function PaymentsPage() {
                   <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
                     {orderMap.get(payment.order_id) ?? payment.order_id.slice(0, 8)}
                   </td>
-                  <td className="px-4 py-3">{methodLabel[payment.method] ?? payment.method}</td>
                   <td className="px-4 py-3">
-                    <Badge variant={statusVariant[payment.status]}>{toTitleCase(payment.status)}</Badge>
+                    {t("payments:methods." + payment.method, { defaultValue: payment.method })}
+                  </td>
+                  <td className="px-4 py-3">
+                    <Badge variant={statusVariant[payment.status]}>
+                      {t("payments:statuses." + payment.status, { defaultValue: toTitleCase(payment.status) })}
+                    </Badge>
                   </td>
                   <td className="px-4 py-3 font-medium">{formatCurrency(payment.amount)}</td>
                   <td className="px-4 py-3 text-muted-foreground">
                     {payment.paid_at ? formatDateShort(payment.paid_at) : "—"}
                   </td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-4 py-3 text-end">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <span className="sr-only">Actions</span>
+                          <span className="sr-only">{t("labels.actions")}</span>
                           <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
                             <circle cx="12" cy="5" r="1.5" />
                             <circle cx="12" cy="12" r="1.5" />
@@ -231,14 +231,14 @@ export function PaymentsPage() {
                           }}
                         >
                           <PenLine />
-                          Edit
+                          {t("actions.edit")}
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => setDeleting(payment)}
                           className="text-destructive focus:text-destructive"
                         >
                           <Trash2 />
-                          Delete
+                          {t("actions.delete")}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -266,9 +266,9 @@ export function PaymentsPage() {
           if (!open) setDeleting(null);
         }}
         onConfirm={() => (deleting ? deleteMutation.mutateAsync(deleting.id) : Promise.resolve())}
-        title="Delete payment"
-        description={deleting ? `Are you sure you want to delete payment "${deleting.payment_number}"?` : undefined}
-        confirmLabel="Delete"
+        title={t("payments:deleteConfirmTitle")}
+        description={deleting ? t("payments:deleteConfirmDescription", { amount: formatCurrency(deleting.amount) }) : undefined}
+        confirmLabel={t("actions.delete")}
       />
     </div>
   );

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Controller, type Control, type FieldPath, type FieldValues } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,7 +34,7 @@ export function FormField({
       {label && (
         <Label className={cn(error && "text-destructive")}>
           {label}
-          {required && <span className="ml-0.5 text-destructive">*</span>}
+          {required && <span className="ms-0.5 text-destructive">*</span>}
         </Label>
       )}
       {children}
@@ -95,11 +96,13 @@ export function FormSelect<
   className,
   control,
   name,
-  placeholder = "Select…",
+  placeholder,
   options,
   disabled,
   onValueChange,
 }: FormSelectProps<TFieldValues, TName>) {
+  const { t } = useTranslation();
+  const resolvedPlaceholder = placeholder ?? t("nav:forms.selectPlaceholder");
   return (
     <FormField label={label} error={error} required={required} className={className}>
       <Controller
@@ -115,7 +118,7 @@ export function FormSelect<
             disabled={disabled}
           >
             <SelectTrigger className={cn(error && "border-destructive")} aria-invalid={Boolean(error)}>
-              <SelectValue placeholder={placeholder} />
+              <SelectValue placeholder={resolvedPlaceholder} />
             </SelectTrigger>
             <SelectContent>
               {options.map((option) => (

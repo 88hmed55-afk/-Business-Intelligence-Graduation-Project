@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import {
   ArrowDownRight,
   ArrowUpRight,
@@ -33,6 +34,7 @@ const ICONS: Record<string, React.ReactNode> = {
 };
 
 function KPICard({ kpi, loading }: { kpi?: any; loading?: boolean }) {
+  const { t } = useTranslation();
   if (loading || !kpi) {
     return (
       <Card className="glass-card">
@@ -70,7 +72,7 @@ function KPICard({ kpi, loading }: { kpi?: any; loading?: boolean }) {
           )}>
             {isPositive ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
             {Math.abs(kpi.change_pct).toFixed(1)}%
-            <span className="text-muted-foreground">vs prev</span>
+            <span className="text-muted-foreground">{t("bi:executiveDashboard.compare")}</span>
           </div>
         )}
       </CardContent>
@@ -86,7 +88,7 @@ function InsightCard({ insight }: { insight: any }) {
     info: "border-sky-400 bg-sky-500/10",
   };
   return (
-    <div className={cn("rounded-xl border-l-4 p-3", severityColors[insight.severity] ?? "border-muted bg-muted/50")}>
+    <div className={cn("rounded-xl border-s-4 p-3", severityColors[insight.severity] ?? "border-muted bg-muted/50")}>
       <p className="text-sm font-semibold">{insight.title}</p>
       <p className="mt-0.5 text-xs text-muted-foreground">{insight.description}</p>
       {insight.change_pct !== null && (
@@ -99,6 +101,7 @@ function InsightCard({ insight }: { insight: any }) {
 }
 
 function RankingList({ title, items, format }: { title: string; items: any[]; format?: string }) {
+  const { t } = useTranslation();
   return (
     <Card className="glass-card">
       <CardHeader className="pb-2">
@@ -120,7 +123,7 @@ function RankingList({ title, items, format }: { title: string; items: any[]; fo
           </div>
         ))}
         {items.length === 0 && (
-          <p className="py-4 text-center text-xs text-muted-foreground">No data</p>
+          <p className="py-4 text-center text-xs text-muted-foreground">{t("bi:executiveDashboard.noData")}</p>
         )}
       </CardContent>
     </Card>
@@ -128,6 +131,7 @@ function RankingList({ title, items, format }: { title: string; items: any[]; fo
 }
 
 export function ExecutiveDashboard() {
+  const { t } = useTranslation();
   const { dateFrom, dateTo, getParams } = useDateFilterStore();
   const params = getParams();
 
@@ -151,7 +155,7 @@ export function ExecutiveDashboard() {
     queryFn: () => biApi.aggregate("category", params),
   });
 
-  if (errOverview) return <ErrorState message="Could not load executive dashboard." />;
+  if (errOverview) return <ErrorState message={t("bi:common.loadFailed")} />;
 
   const kpis = overview?.kpis ?? [];
   const revenueData = overview?.revenue_chart ?? [];
@@ -168,8 +172,8 @@ export function ExecutiveDashboard() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Executive Dashboard"
-        description="Strategic business intelligence overview"
+        title={t("bi:executiveDashboard.title")}
+        description={t("bi:executiveDashboard.subtitle")}
       >
         <DateFilter />
       </PageHeader>
@@ -193,54 +197,54 @@ export function ExecutiveDashboard() {
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
         <LineChartCard
-          title="Revenue Trend"
-          description="Monthly revenue performance"
+          title={t("bi:executiveDashboard.monthlyTrend")}
+          description={t("bi:executiveDashboard.revenueTrendDescription")}
           data={revenueData}
           xKey="period"
-          series={[{ key: "revenue", name: "Revenue", color: "hsl(var(--chart-1))" }]}
+          series={[{ key: "revenue", name: t("bi:trends.revenue"), color: "hsl(var(--chart-1))" }]}
           height={320}
         />
         <LineChartCard
-          title="Profit Trend"
-          description="Monthly profit performance"
+          title={t("bi:executiveDashboard.profitTrend")}
+          description={t("bi:executiveDashboard.profitTrendDescription")}
           data={profitData}
           xKey="period"
-          series={[{ key: "profit", name: "Profit", color: "hsl(var(--chart-2))" }]}
+          series={[{ key: "profit", name: t("bi:trends.profit"), color: "hsl(var(--chart-2))" }]}
           height={320}
         />
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <DonutChartCard
-          title="Order Status Distribution"
-          description="Breakdown by status"
+          title={t("bi:executiveDashboard.orderStatusDistribution")}
+          description={t("bi:executiveDashboard.orderStatusDistributionDescription")}
           data={orderStatusData}
           height={280}
         />
         <DonutChartCard
-          title="Category Revenue Split"
-          description="Revenue by product category"
-          data={categorySplit.map(c => ({ name: c.name ?? "Unknown", value: c.value }))}
+          title={t("bi:executiveDashboard.categoryRevenueSplit")}
+          description={t("bi:executiveDashboard.categoryRevenueSplitDescription")}
+          data={categorySplit.map(c => ({ name: c.name ?? t("labels.unknown"), value: c.value }))}
           height={280}
         />
         <Card className="glass-card">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Period Comparison</CardTitle>
+            <CardTitle className="text-sm">{t("bi:executiveDashboard.periodComparison")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {compare && [
-              { label: "Revenue", curr: compare.current.revenue, prev: compare.previous.revenue, fmt: true },
-              { label: "Orders", curr: compare.current.orders, prev: compare.previous.orders, fmt: false },
-              { label: "Profit", curr: compare.current.profit, prev: compare.previous.profit, fmt: true },
-              { label: "Customers", curr: compare.current.customers, prev: compare.previous.customers, fmt: false },
-              { label: "AOV", curr: compare.current.avg_order_value, prev: compare.previous.avg_order_value, fmt: true },
+              { label: t("bi:trends.revenue"), curr: compare.current.revenue, prev: compare.previous.revenue, fmt: true },
+              { label: t("bi:trends.orders"), curr: compare.current.orders, prev: compare.previous.orders, fmt: false },
+              { label: t("bi:trends.profit"), curr: compare.current.profit, prev: compare.previous.profit, fmt: true },
+              { label: t("bi:trends.customers"), curr: compare.current.customers, prev: compare.previous.customers, fmt: false },
+              { label: t("bi:executiveDashboard.avgOrderValue"), curr: compare.current.avg_order_value, prev: compare.previous.avg_order_value, fmt: true },
             ].map((item) => (
               <div key={item.label} className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">{item.label}</span>
                 <div className="text-right">
                   <span className="font-medium">{item.fmt ? formatCurrency(item.curr) : Math.round(item.curr).toLocaleString()}</span>
-                  <span className="ml-2 text-xs text-muted-foreground">
-                    vs {item.fmt ? formatCurrency(item.prev) : Math.round(item.prev).toLocaleString()}
+                  <span className="ms-2 text-xs text-muted-foreground">
+                    {t("bi:executiveDashboard.compare")} {item.fmt ? formatCurrency(item.prev) : Math.round(item.prev).toLocaleString()}
                   </span>
                 </div>
               </div>
@@ -250,8 +254,8 @@ export function ExecutiveDashboard() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <RankingList title="Top 10 Products" items={topProducts.map((p, i) => ({ rank: i + 1, name: p.name, value: p.value }))} format="currency" />
-        <RankingList title="Top 10 Customers" items={topCustomers.map((c, i) => ({ rank: i + 1, name: c.name, value: c.value }))} format="currency" />
+        <RankingList title={t("bi:executiveDashboard.topProducts")} items={topProducts.map((p, i) => ({ rank: i + 1, name: p.name, value: p.value }))} format="currency" />
+        <RankingList title={t("bi:insights.topCustomers")} items={topCustomers.map((c, i) => ({ rank: i + 1, name: c.name, value: c.value }))} format="currency" />
       </div>
 
       {insightList.length > 0 && (
@@ -259,7 +263,7 @@ export function ExecutiveDashboard() {
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-sm">
               <Zap className="h-4 w-4 text-primary" />
-              Smart Insights
+              {t("bi:executiveDashboard.smartInsights")}
             </CardTitle>
           </CardHeader>
           <CardContent>

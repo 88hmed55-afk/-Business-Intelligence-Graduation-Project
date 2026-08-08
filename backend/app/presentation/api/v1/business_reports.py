@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from typing import Any, Dict
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Header, Query
 from fastapi.responses import Response
 
 from app.application.schemas.common import ApiResponse
@@ -160,6 +160,7 @@ def export_report(
     format: ReportExportFormat = Query(...),
     date_from: date = Query(default=DEFAULT_START),
     date_to: date = Query(default=DEFAULT_END),
+    accept_language: str | None = Header(default=None),
     current_user: User = Depends(get_current_user),
     service: ReportingService = Depends(get_reporting_service),
     exporter: ExportService = Depends(get_export_service),
@@ -190,8 +191,13 @@ def export_report(
 
     report = handler[report_type]()
     rows = [row.model_dump(mode="json") for row in report.rows]
+    from app.application.services.export_service import _is_arabic_language, _REPORT_TITLES
+
+    is_arabic = _is_arabic_language(accept_language)
+    en_title, ar_title = _REPORT_TITLES.get(report_type, (report_type.replace("_", " ").title(), report_type.replace("_", " ").title()))
+    title = f"Nova BI - {ar_title if is_arabic else en_title}"
     content_type, content, filename = exporter.export(
-        report_type=report_type, rows=rows, format=format, title=f"Nova BI - {report_type.title()} Report"
+        report_type=report_type, rows=rows, format=format, title=title, language=accept_language
     )
     return Response(
         content=content,

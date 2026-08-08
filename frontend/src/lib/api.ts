@@ -3,6 +3,7 @@ import axios, { AxiosError, type AxiosRequestConfig } from "axios";
 import { notifyDomainsChanged } from "@/lib/sync";
 import { isSyncableMutation, resolveDomainsFromUrl } from "@/lib/sync/domains";
 import { useAuthStore } from "@/stores/auth-store";
+import { useLanguageStore } from "@/stores/language-store";
 import type { ApiEnvelope, ApiErrorPayload, Paginated, TokenResponse } from "@/types";
 
 export const API_BASE_URL: string =
@@ -11,31 +12,44 @@ export const API_BASE_URL: string =
 export class ApiClientError extends Error {
   status: number;
   detail?: string;
+  code?: string;
 
-  constructor(message: string, status = 0, detail?: string) {
+  constructor(message: string, status = 0, detail?: string, code?: string) {
     super(message);
     this.name = "ApiClientError";
     this.status = status;
     this.detail = detail;
+    this.code = code;
   }
 }
 
 let refreshPromise: Promise<boolean> | null = null;
 
-function extractErrorMessage(error: AxiosError): string {
+function extractErrorMessage(error: AxiosError): { message: string; code?: string } {
   const payload = error.response?.data as ApiErrorPayload | ApiEnvelope<unknown> | undefined;
-  if (!payload) return error.message || "Network error";
+  if (!payload) return { message: error.message || "Network error" };
+
+  if ("error" in payload && payload.error) {
+    const err = payload.error;
+    return {
+      message: err.message ?? (err.code ?? error.message ?? "Request failed"),
+      code: err.code,
+    };
+  }
+
   if ("detail" in payload) {
-    if (typeof payload.detail === "string") return payload.detail;
+    if (typeof payload.detail === "string") return { message: payload.detail };
     if (Array.isArray(payload.detail) && payload.detail.length > 0) {
-      return payload.detail
-        .map((item) => item.msg)
-        .filter(Boolean)
-        .join("; ");
+      return {
+        message: payload.detail
+          .map((item) => item.msg)
+          .filter(Boolean)
+          .join("; "),
+      };
     }
   }
-  if ("message" in payload && payload.message) return payload.message;
-  return error.message || "Request failed";
+  if ("message" in payload && payload.message) return { message: payload.message };
+  return { message: error.message || "Request failed" };
 }
 
 export const http = axios.create({
@@ -51,6 +65,7 @@ http.interceptors.request.use((config) => {
   if (accessToken) {
     config.headers.Authorization = `Bearer ${accessToken}`;
   }
+  config.headers["Accept-Language"] = useLanguageStore.getState().language ?? "en";
   return config;
 });
 
@@ -90,7 +105,14 @@ http.interceptors.response.use(
       }
     }
 
-    return Promise.reject(new ApiClientError(extractErrorMessage(error), error.response?.status ?? 0));
+    return Promise.reject(
+      new ApiClientError(
+        extractErrorMessage(error).message,
+        error.response?.status ?? 0,
+        undefined,
+        extractErrorMessage(error).code,
+      ),
+    );
   },
 );
 

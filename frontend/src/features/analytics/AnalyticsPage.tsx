@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import {
   Bar,
   BarChart,
@@ -35,6 +36,7 @@ const tooltipStyle = {
 } as const;
 
 export function AnalyticsPage() {
+  const { t } = useTranslation();
   const overviewQuery = useQuery({
     queryKey: ["analytics", "overview"],
     queryFn: analyticsApi.overview,
@@ -53,7 +55,7 @@ export function AnalyticsPage() {
   if (overviewQuery.isError || trendsQuery.isError || performanceQuery.isError) {
     return (
       <ErrorState
-        message="Could not load analytics data."
+        message={t("bi:common.loadFailed")}
         onRetry={() => {
           void overviewQuery.refetch();
           void trendsQuery.refetch();
@@ -79,22 +81,22 @@ export function AnalyticsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Analytics"
-        description="Explore trends, performance and category breakdowns"
+        title={t("bi:analytics.title")}
+        description={t("bi:analytics.subtitle")}
       />
 
       <Tabs defaultValue="trends">
         <TabsList>
-          <TabsTrigger value="trends">Trends</TabsTrigger>
-          <TabsTrigger value="categories">Categories</TabsTrigger>
-          <TabsTrigger value="performance">Performance</TabsTrigger>
+          <TabsTrigger value="trends">{t("bi:analytics.tabs.trends")}</TabsTrigger>
+          <TabsTrigger value="categories">{t("bi:analytics.tabs.categories")}</TabsTrigger>
+          <TabsTrigger value="performance">{t("bi:analytics.tabs.performance")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="trends" className="mt-4">
           <Card className="glass-card">
             <CardHeader>
-              <CardTitle>Achievement Trend</CardTitle>
-              <CardDescription>Average KPI achievement percentage per month</CardDescription>
+              <CardTitle>{t("bi:analytics.achievementTrend")}</CardTitle>
+              <CardDescription>{t("bi:analytics.achievementTrendDescription")}</CardDescription>
             </CardHeader>
             <CardContent>
               {loading ? (
@@ -113,7 +115,7 @@ export function AnalyticsPage() {
                       />
                       <Tooltip
                         contentStyle={tooltipStyle}
-                        formatter={(value: unknown) => [`${value}%`, "Achievement"]}
+                        formatter={(value: unknown) => [`${value}%`, t("bi:analytics.achievement")]}
                       />
                       <Line
                         type="monotone"
@@ -134,14 +136,14 @@ export function AnalyticsPage() {
         <TabsContent value="categories" className="mt-4">
           <Card className="glass-card">
             <CardHeader>
-              <CardTitle>Category Achievement</CardTitle>
-              <CardDescription>Average achievement percentage by KPI category</CardDescription>
+              <CardTitle>{t("bi:analytics.categoryAchievement")}</CardTitle>
+              <CardDescription>{t("bi:analytics.categoryAchievementDescription")}</CardDescription>
             </CardHeader>
             <CardContent>
               {loading ? (
                 <Skeleton className="h-[320px] w-full" />
               ) : categoryData.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No category data yet.</p>
+                <p className="text-sm text-muted-foreground">{t("bi:analytics.noCategoryData")}</p>
               ) : (
                 <div className="h-[320px] w-full">
                   <ResponsiveContainer width="100%" height="100%">
@@ -157,7 +159,7 @@ export function AnalyticsPage() {
                       <Tooltip
                         contentStyle={tooltipStyle}
                         cursor={{ fill: "hsl(var(--muted) / 0.4)" }}
-                        formatter={(value: unknown) => [`${value}%`, "Achievement"]}
+                        formatter={(value: unknown) => [`${value}%`, t("bi:analytics.achievement")]}
                       />
                       <Bar
                         dataKey="achievement"
@@ -176,24 +178,24 @@ export function AnalyticsPage() {
         <TabsContent value="performance" className="mt-4">
           <Card className="glass-card">
             <CardHeader>
-              <CardTitle>KPI Performance</CardTitle>
-              <CardDescription>Latest recorded values versus targets</CardDescription>
+              <CardTitle>{t("bi:analytics.kpiPerformance")}</CardTitle>
+              <CardDescription>{t("bi:analytics.kpiPerformanceDescription")}</CardDescription>
             </CardHeader>
             <CardContent>
               {loading ? (
                 <Skeleton className="h-[320px] w-full" />
               ) : (performanceQuery.data?.length ?? 0) === 0 ? (
-                <p className="text-sm text-muted-foreground">No performance data yet.</p>
+                <p className="text-sm text-muted-foreground">{t("bi:analytics.noPerformanceData")}</p>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>KPI</TableHead>
-                      <TableHead>Category</TableHead>
-                      <TableHead className="text-right">Target</TableHead>
-                      <TableHead className="text-right">Current</TableHead>
-                      <TableHead className="text-right">Achievement</TableHead>
-                      <TableHead>Trend</TableHead>
+                      <TableHead>{t("bi:analytics.table.kpi")}</TableHead>
+                      <TableHead>{t("labels.category")}</TableHead>
+                      <TableHead className="text-right">{t("bi:analytics.table.target")}</TableHead>
+                      <TableHead className="text-right">{t("bi:analytics.table.current")}</TableHead>
+                      <TableHead className="text-right">{t("bi:analytics.achievement")}</TableHead>
+                      <TableHead>{t("bi:forecasting.trend")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>

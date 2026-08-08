@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Plus, Search, Star, Trash2, Eye, Pencil } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
@@ -28,13 +29,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/use-toast";
 import { DashboardDialog } from "@/features/dashboards/DashboardDialog";
 import { dashboardsApi } from "@/features/dashboards/api";
-import { ApiClientError } from "@/lib/api";
+import { getErrorMessage } from "@/lib/error-messages";
 import { cn } from "@/lib/utils";
 import type { Dashboard } from "@/types";
 
 const PAGE_SIZE = 9;
 
 export function DashboardsPage() {
+  const { t } = useTranslation();
   const { toast } = useToast();
 
   const [page, setPage] = useState(1);
@@ -60,8 +62,8 @@ export function DashboardsPage() {
     },
     onError: (error: unknown) => {
       toast({
-        title: "Action failed",
-        description: error instanceof ApiClientError ? error.message : "Unexpected error",
+        title: t("dashboards:actionFailed"),
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     },
@@ -70,13 +72,13 @@ export function DashboardsPage() {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => dashboardsApi.remove(id),
     onSuccess: () => {
-      toast({ title: "Dashboard deleted", variant: "success" });
+      toast({ title: t("dashboards:deletedToast"), variant: "success" });
       setDeleting(null);
     },
     onError: (error: unknown) => {
       toast({
-        title: "Could not delete dashboard",
-        description: error instanceof ApiClientError ? error.message : "Unexpected error",
+        title: t("dashboards:deleteFailedToast"),
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     },
@@ -91,12 +93,12 @@ export function DashboardsPage() {
   }, [search]);
 
   if (isError) {
-    return <ErrorState message="Could not load dashboards." onRetry={() => void refetch()} />;
+    return <ErrorState message={t("dashboards:loadFailed")} onRetry={() => void refetch()} />;
   }
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Dashboards" description="Organize and manage your KPI dashboards">
+      <PageHeader title={t("dashboards:title")} description={t("dashboards:description")}>
         <Button
           onClick={() => {
             setEditing(null);
@@ -104,15 +106,15 @@ export function DashboardsPage() {
           }}
         >
           <Plus className="h-4 w-4" />
-          New dashboard
+          {t("dashboards:add")}
         </Button>
       </PageHeader>
 
       <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          className="pl-9"
-          placeholder="Search dashboards…"
+          className="ps-9"
+          placeholder={t("dashboards:searchPlaceholder")}
           value={search}
           onChange={(event) => setSearch(event.target.value)}
         />
@@ -126,9 +128,9 @@ export function DashboardsPage() {
         </div>
       ) : (data?.items.length ?? 0) === 0 ? (
         <EmptyState
-          title="No dashboards found"
-          description="Create your first dashboard to start tracking KPIs."
-          actionLabel="Create dashboard"
+          title={t("dashboards:emptyTitle")}
+          description={t("dashboards:emptyDescription")}
+          actionLabel={t("dashboards:create")}
           onAction={() => setDialogOpen(true)}
         />
       ) : (
@@ -142,13 +144,13 @@ export function DashboardsPage() {
                       {dashboard.name}
                     </CardTitle>
                     <CardDescription className="mt-1 line-clamp-2 min-h-[2rem]">
-                      {dashboard.description || "No description"}
+                      {dashboard.description || t("dashboards:noDescription")}
                     </CardDescription>
                   </Link>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <span className="sr-only">Actions</span>
+                        <span className="sr-only">{t("labels.actions")}</span>
                         <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
                           <circle cx="12" cy="5" r="1.5" />
                           <circle cx="12" cy="12" r="1.5" />
@@ -159,15 +161,15 @@ export function DashboardsPage() {
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => { setEditing(dashboard); setDialogOpen(true); }}>
                         <Pencil />
-                        Edit
+                        {t("actions.edit")}
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => favoriteMutation.mutate(dashboard.id)}>
                         <Star className={dashboard.is_favorite ? "fill-current" : undefined} />
-                        {dashboard.is_favorite ? "Unfavorite" : "Favorite"}
+                        {dashboard.is_favorite ? t("dashboards:unfavorite") : t("dashboards:favorite")}
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => setDeleting(dashboard)} className="text-destructive focus:text-destructive">
                         <Trash2 />
-                        Delete
+                        {t("actions.delete")}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -177,20 +179,20 @@ export function DashboardsPage() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Badge variant={dashboard.is_public ? "info" : "secondary"}>
-                      {dashboard.is_public ? "Public" : "Private"}
+                      {dashboard.is_public ? t("dashboards:public") : t("dashboards:private")}
                     </Badge>
                     {dashboard.is_favorite && (
                       <Badge variant="warning">
-                        <Star className="mr-1 h-3 w-3 fill-current" />
-                        Favorite
+                        <Star className="ms-1 h-3 w-3 fill-current" />
+                        {t("dashboards:favorite")}
                       </Badge>
                     )}
-                    <Badge variant="outline">{dashboard.kpi_count} KPIs</Badge>
+                    <Badge variant="outline">{t("dashboards:kpiCount", { count: dashboard.kpi_count })}</Badge>
                   </div>
                   <Button asChild variant="ghost" size="sm">
                     <Link to={`/dashboards/${dashboard.id}`}>
                       <Eye className="h-4 w-4" />
-                      Open
+                      {t("actions.open")}
                     </Link>
                   </Button>
                 </div>
@@ -216,13 +218,13 @@ export function DashboardsPage() {
           if (!open) setDeleting(null);
         }}
         onConfirm={() => (deleting ? deleteMutation.mutateAsync(deleting.id) : Promise.resolve())}
-        title="Delete dashboard"
+        title={t("dashboards:deleteConfirmTitle")}
         description={
           deleting
-            ? `Are you sure you want to delete "${deleting.name}"? This action cannot be undone.`
+            ? t("dashboards:deleteConfirmDescription", { name: deleting.name })
             : undefined
         }
-        confirmLabel="Delete"
+        confirmLabel={t("actions.delete")}
       />
     </div>
   );

@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Download, FileSpreadsheet } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { ErrorState } from "@/components/common/ErrorState";
 import { PageHeader } from "@/components/common/PageHeader";
@@ -21,7 +22,7 @@ import {
   businessReportsApi,
   exportBusinessReport,
 } from "@/features/reports/api";
-import { ApiClientError } from "@/lib/api";
+import { getErrorMessage } from "@/lib/error-messages";
 import { cn, formatCurrency, formatNumber, formatPercent, parseNum } from "@/lib/utils";
 import type {
   CustomerReportRow,
@@ -37,13 +38,13 @@ import type {
 type ReportKey = "sales" | "profit" | "customers" | "products" | "inventory" | "monthly" | "yearly";
 
 const reportTabs: Array<{ key: ReportKey; label: string }> = [
-  { key: "sales", label: "Sales" },
-  { key: "profit", label: "Profit" },
-  { key: "customers", label: "Customers" },
-  { key: "products", label: "Products" },
-  { key: "inventory", label: "Inventory" },
-  { key: "monthly", label: "Monthly" },
-  { key: "yearly", label: "Yearly" },
+  { key: "sales", label: "reports:tabs.sales" },
+  { key: "profit", label: "reports:tabs.profit" },
+  { key: "customers", label: "reports:tabs.customers" },
+  { key: "products", label: "reports:tabs.products" },
+  { key: "inventory", label: "reports:tabs.inventory" },
+  { key: "monthly", label: "reports:tabs.monthly" },
+  { key: "yearly", label: "reports:tabs.yearly" },
 ];
 
 function lastDays(days: number) {
@@ -69,6 +70,7 @@ type BusinessReportData = {
 };
 
 export function BusinessReportsPage() {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const defaultRange = lastDays(90);
   const [active, setActive] = useState<ReportKey>("sales");
@@ -114,12 +116,12 @@ export function BusinessReportsPage() {
     mutationFn: ({ format }: { format: ReportExportFormat }) =>
       exportBusinessReport(active, format, applied.start, applied.end),
     onSuccess: (filename) => {
-      toast({ title: "Export started", description: filename, variant: "success" });
+      toast({ title: t("reports:exportStarted"), description: filename, variant: "success" });
     },
     onError: (error: unknown) => {
       toast({
-        title: "Could not export report",
-        description: error instanceof ApiClientError ? error.message : "Unexpected error",
+        title: t("reports:exportFailed"),
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     },
@@ -144,8 +146,8 @@ export function BusinessReportsPage() {
       return (
         <div className="p-10 text-center">
           <FileSpreadsheet className="mx-auto h-10 w-10 text-muted-foreground" />
-          <p className="mt-3 font-medium">No data for this report</p>
-          <p className="text-sm text-muted-foreground">Try widening the date range.</p>
+          <p className="mt-3 font-medium">{t("reports:emptyTitle")}</p>
+          <p className="text-sm text-muted-foreground">{t("reports:emptyDescription")}</p>
         </div>
       );
     }
@@ -155,14 +157,14 @@ export function BusinessReportsPage() {
         return (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b bg-muted/40 text-left text-xs text-muted-foreground">
-                <th className="px-4 py-3 font-medium">Period</th>
-                <th className="px-4 py-3 font-medium">Orders</th>
-                <th className="px-4 py-3 font-medium">Units</th>
-                <th className="px-4 py-3 font-medium">Gross revenue</th>
-                <th className="px-4 py-3 font-medium">Discounts</th>
-                <th className="px-4 py-3 font-medium">Net revenue</th>
-                <th className="px-4 py-3 font-medium">Avg order</th>
+              <tr className="border-b bg-muted/40 text-start text-xs text-muted-foreground">
+                <th className="px-4 py-3 font-medium">{t("reports:table.period")}</th>
+                <th className="px-4 py-3 font-medium">{t("reports:table.orders")}</th>
+                <th className="px-4 py-3 font-medium">{t("reports:table.units")}</th>
+                <th className="px-4 py-3 font-medium">{t("reports:table.grossRevenue")}</th>
+                <th className="px-4 py-3 font-medium">{t("reports:table.discounts")}</th>
+                <th className="px-4 py-3 font-medium">{t("reports:table.netRevenue")}</th>
+                <th className="px-4 py-3 font-medium">{t("reports:table.avgOrderValue")}</th>
               </tr>
             </thead>
             <tbody>
@@ -184,14 +186,14 @@ export function BusinessReportsPage() {
         return (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b bg-muted/40 text-left text-xs text-muted-foreground">
-                <th className="px-4 py-3 font-medium">Period</th>
-                <th className="px-4 py-3 font-medium">Revenue</th>
-                <th className="px-4 py-3 font-medium">COGS</th>
-                <th className="px-4 py-3 font-medium">Gross profit</th>
-                <th className="px-4 py-3 font-medium">Margin</th>
-                <th className="px-4 py-3 font-medium">Tax</th>
-                <th className="px-4 py-3 font-medium">Net profit</th>
+              <tr className="border-b bg-muted/40 text-start text-xs text-muted-foreground">
+                <th className="px-4 py-3 font-medium">{t("reports:table.period")}</th>
+                <th className="px-4 py-3 font-medium">{t("reports:table.revenue")}</th>
+                <th className="px-4 py-3 font-medium">{t("reports:table.cogs")}</th>
+                <th className="px-4 py-3 font-medium">{t("reports:table.grossProfit")}</th>
+                <th className="px-4 py-3 font-medium">{t("reports:table.margin")}</th>
+                <th className="px-4 py-3 font-medium">{t("reports:table.tax")}</th>
+                <th className="px-4 py-3 font-medium">{t("reports:table.netProfit")}</th>
               </tr>
             </thead>
             <tbody>
@@ -217,12 +219,12 @@ export function BusinessReportsPage() {
         return (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b bg-muted/40 text-left text-xs text-muted-foreground">
-                <th className="px-4 py-3 font-medium">Customer</th>
-                <th className="px-4 py-3 font-medium">Orders</th>
-                <th className="px-4 py-3 font-medium">Total spent</th>
-                <th className="px-4 py-3 font-medium">Avg order</th>
-                <th className="px-4 py-3 font-medium">Last order</th>
+              <tr className="border-b bg-muted/40 text-start text-xs text-muted-foreground">
+                <th className="px-4 py-3 font-medium">{t("reports:table.customer")}</th>
+                <th className="px-4 py-3 font-medium">{t("reports:table.orders")}</th>
+                <th className="px-4 py-3 font-medium">{t("reports:table.totalSpent")}</th>
+                <th className="px-4 py-3 font-medium">{t("reports:table.avgOrderValue")}</th>
+                <th className="px-4 py-3 font-medium">{t("reports:table.lastOrder")}</th>
               </tr>
             </thead>
             <tbody>
@@ -242,13 +244,13 @@ export function BusinessReportsPage() {
         return (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b bg-muted/40 text-left text-xs text-muted-foreground">
-                <th className="px-4 py-3 font-medium">Product</th>
-                <th className="px-4 py-3 font-medium">Category</th>
-                <th className="px-4 py-3 font-medium">Units sold</th>
-                <th className="px-4 py-3 font-medium">Revenue</th>
-                <th className="px-4 py-3 font-medium">COGS</th>
-                <th className="px-4 py-3 font-medium">Profit</th>
+              <tr className="border-b bg-muted/40 text-start text-xs text-muted-foreground">
+                <th className="px-4 py-3 font-medium">{t("reports:table.product")}</th>
+                <th className="px-4 py-3 font-medium">{t("reports:table.category")}</th>
+                <th className="px-4 py-3 font-medium">{t("reports:table.unitsSold")}</th>
+                <th className="px-4 py-3 font-medium">{t("reports:table.revenue")}</th>
+                <th className="px-4 py-3 font-medium">{t("reports:table.cogs")}</th>
+                <th className="px-4 py-3 font-medium">{t("reports:table.profit")}</th>
               </tr>
             </thead>
             <tbody>
@@ -272,14 +274,14 @@ export function BusinessReportsPage() {
         return (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b bg-muted/40 text-left text-xs text-muted-foreground">
-                <th className="px-4 py-3 font-medium">Product</th>
-                <th className="px-4 py-3 font-medium">Warehouse</th>
-                <th className="px-4 py-3 font-medium">Available</th>
-                <th className="px-4 py-3 font-medium">Reserved</th>
-                <th className="px-4 py-3 font-medium">Reorder level</th>
-                <th className="px-4 py-3 font-medium">Stock value</th>
-                <th className="px-4 py-3 font-medium">Status</th>
+              <tr className="border-b bg-muted/40 text-start text-xs text-muted-foreground">
+                <th className="px-4 py-3 font-medium">{t("reports:table.product")}</th>
+                <th className="px-4 py-3 font-medium">{t("reports:table.warehouse")}</th>
+                <th className="px-4 py-3 font-medium">{t("reports:table.available")}</th>
+                <th className="px-4 py-3 font-medium">{t("reports:table.reserved")}</th>
+                <th className="px-4 py-3 font-medium">{t("reports:table.reorderLevel")}</th>
+                <th className="px-4 py-3 font-medium">{t("reports:table.stockValue")}</th>
+                <th className="px-4 py-3 font-medium">{t("labels.status")}</th>
               </tr>
             </thead>
             <tbody>
@@ -308,13 +310,13 @@ export function BusinessReportsPage() {
         return (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b bg-muted/40 text-left text-xs text-muted-foreground">
-                <th className="px-4 py-3 font-medium">Month</th>
-                <th className="px-4 py-3 font-medium">Orders</th>
-                <th className="px-4 py-3 font-medium">Revenue</th>
-                <th className="px-4 py-3 font-medium">Profit</th>
-                <th className="px-4 py-3 font-medium">Margin</th>
-                <th className="px-4 py-3 font-medium">New customers</th>
+              <tr className="border-b bg-muted/40 text-start text-xs text-muted-foreground">
+                <th className="px-4 py-3 font-medium">{t("reports:table.month")}</th>
+                <th className="px-4 py-3 font-medium">{t("reports:table.orders")}</th>
+                <th className="px-4 py-3 font-medium">{t("reports:table.revenue")}</th>
+                <th className="px-4 py-3 font-medium">{t("reports:table.profit")}</th>
+                <th className="px-4 py-3 font-medium">{t("reports:table.margin")}</th>
+                <th className="px-4 py-3 font-medium">{t("reports:table.newCustomers")}</th>
               </tr>
             </thead>
             <tbody>
@@ -335,13 +337,13 @@ export function BusinessReportsPage() {
         return (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b bg-muted/40 text-left text-xs text-muted-foreground">
-                <th className="px-4 py-3 font-medium">Year</th>
-                <th className="px-4 py-3 font-medium">Orders</th>
-                <th className="px-4 py-3 font-medium">Revenue</th>
-                <th className="px-4 py-3 font-medium">Profit</th>
-                <th className="px-4 py-3 font-medium">Margin</th>
-                <th className="px-4 py-3 font-medium">Active customers</th>
+              <tr className="border-b bg-muted/40 text-start text-xs text-muted-foreground">
+                <th className="px-4 py-3 font-medium">{t("reports:table.year")}</th>
+                <th className="px-4 py-3 font-medium">{t("reports:table.orders")}</th>
+                <th className="px-4 py-3 font-medium">{t("reports:table.revenue")}</th>
+                <th className="px-4 py-3 font-medium">{t("reports:table.profit")}</th>
+                <th className="px-4 py-3 font-medium">{t("reports:table.margin")}</th>
+                <th className="px-4 py-3 font-medium">{t("reports:table.activeCustomers")}</th>
               </tr>
             </thead>
             <tbody>
@@ -362,26 +364,26 @@ export function BusinessReportsPage() {
   };
 
   if (isError) {
-    return <ErrorState message="Could not load report." onRetry={() => void refetch()} />;
+    return <ErrorState message={t("reports:loadFailed")} onRetry={() => void refetch()} />;
   }
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Business reports"
-        description="Analytical reports across sales, profit, customers, and inventory."
+        title={t("reports:businessReports")}
+        description={t("reports:description")}
       >
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button disabled={exportMutation.isPending}>
               <Download className={cn("h-4 w-4", exportMutation.isPending && "animate-pulse")} />
-              {exportMutation.isPending ? "Exporting…" : "Export"}
+              {exportMutation.isPending ? t("reports:exporting") : t("reports:export")}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             {(["csv", "xlsx", "pdf"] as const).map((format) => (
               <DropdownMenuItem key={format} onClick={() => exportMutation.mutate({ format })}>
-                {format.toUpperCase()}
+                {t(`reports:formats.${format}`)}
               </DropdownMenuItem>
             ))}
           </DropdownMenuContent>
@@ -401,7 +403,7 @@ export function BusinessReportsPage() {
                 : "bg-background text-muted-foreground hover:text-foreground",
             )}
           >
-            {tab.label}
+            {t(tab.label)}
           </button>
         ))}
       </div>
@@ -409,24 +411,24 @@ export function BusinessReportsPage() {
       {hasDateRange && (
         <div className="flex flex-wrap items-end gap-3">
           <div className="space-y-1">
-            <label className="text-xs font-medium text-muted-foreground">From</label>
+            <label className="text-xs font-medium text-muted-foreground">{t("dates.from")}</label>
             <Input type="date" className="w-44" value={dateFrom} onChange={(event) => setDateFrom(event.target.value)} />
           </div>
           <div className="space-y-1">
-            <label className="text-xs font-medium text-muted-foreground">To</label>
+            <label className="text-xs font-medium text-muted-foreground">{t("dates.to")}</label>
             <Input type="date" className="w-44" value={dateTo} onChange={(event) => setDateTo(event.target.value)} />
           </div>
           <Button
             variant="outline"
             onClick={() => setApplied({ start: dateFrom, end: dateTo })}
           >
-            Apply range
+            {t("reports:applyRange")}
           </Button>
         </div>
       )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard title="Rows" value={rows.length} icon={<FileSpreadsheet />} />
+        <StatCard title={t("reports:rows")} value={rows.length} icon={<FileSpreadsheet />} />
         {Object.entries(summary).slice(0, 3).map(([key, value]) => {
           const num = parseNum(value);
           const isMoney = typeof value === "string" && /^[-\d,]+(\.\d+)?$/.test(value.replace(/,/g, "")) && !key.includes("count") && !key.includes("customers");
@@ -447,7 +449,7 @@ export function BusinessReportsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">{active} report</CardTitle>
+          <CardTitle className="text-base">{t(`reports:tabs.${active}`)}</CardTitle>
         </CardHeader>
         <CardContent className="overflow-x-auto p-0">
           {renderRows()}

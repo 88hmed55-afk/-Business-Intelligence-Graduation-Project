@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Loader2, Settings2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -14,7 +15,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { FormInput, FormSwitch, FormTextarea } from "@/components/forms";
 import { settingsApi, type SettingCreatePayload, type SettingUpdatePayload } from "@/features/settings/api";
-import { ApiClientError } from "@/lib/api";
+import { getErrorMessage } from "@/lib/error-messages";
 import type { AppSetting } from "@/types";
 
 interface SettingDialogProps {
@@ -24,6 +25,7 @@ interface SettingDialogProps {
 }
 
 export function SettingDialog({ open, onOpenChange, setting }: SettingDialogProps) {
+  const { t } = useTranslation();
   const { toast } = useToast();
 
   const [key, setKey] = useState("");
@@ -47,13 +49,13 @@ export function SettingDialog({ open, onOpenChange, setting }: SettingDialogProp
   const createMutation = useMutation({
     mutationFn: (payload: SettingCreatePayload) => settingsApi.create(payload),
     onSuccess: () => {
-      toast({ title: "Setting created", variant: "success" });
+      toast({ title: t("settings:createdToast"), variant: "success" });
       onOpenChange(false);
     },
     onError: (error: unknown) => {
       toast({
-        title: "Could not create setting",
-        description: error instanceof ApiClientError ? error.message : "Unexpected error",
+        title: t("settings:createFailedToast"),
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     },
@@ -63,13 +65,13 @@ export function SettingDialog({ open, onOpenChange, setting }: SettingDialogProp
     mutationFn: ({ id, payload }: { id: string; payload: SettingUpdatePayload }) =>
       settingsApi.update(id, payload),
     onSuccess: () => {
-      toast({ title: "Setting updated", variant: "success" });
+      toast({ title: t("settings:updatedToast"), variant: "success" });
       onOpenChange(false);
     },
     onError: (error: unknown) => {
       toast({
-        title: "Could not update setting",
-        description: error instanceof ApiClientError ? error.message : "Unexpected error",
+        title: t("settings:updateFailedToast"),
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     },
@@ -81,13 +83,13 @@ export function SettingDialog({ open, onOpenChange, setting }: SettingDialogProp
     try {
       const parsed = JSON.parse(json) as unknown;
       if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
-        setJsonError("Value must be a JSON object");
+        setJsonError(t("settings:json.notObject"));
         return null;
       }
       setJsonError("");
       return parsed as Record<string, unknown>;
     } catch {
-      setJsonError("Invalid JSON");
+      setJsonError(t("settings:json.invalid"));
       return null;
     }
   };
@@ -123,22 +125,22 @@ export function SettingDialog({ open, onOpenChange, setting }: SettingDialogProp
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Settings2 className="h-5 w-5 text-primary" />
-            {setting ? `Edit setting: ${setting.key}` : "Create setting"}
+            {setting ? t("settings:editWithKey", { key: setting.key }) : t("settings:createTitle")}
           </DialogTitle>
           <DialogDescription>
-            {setting ? "Update this setting's value." : "Add a new application setting."}
+            {setting ? t("settings:editDescription") : t("settings:createDescription")}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           {!setting && (
-            <FormInput label="Key" required value={key} onChange={(value) => setKey(value)} />
+            <FormInput label={t("settings:fields.key")} required value={key} onChange={(value) => setKey(value)} />
           )}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <FormInput label="Group" value={group} onChange={(value) => setGroup(value)} />
-            <FormSwitch label="Public" checked={isPublic} onCheckedChange={setIsPublic} />
+            <FormInput label={t("settings:fields.group")} value={group} onChange={(value) => setGroup(value)} />
+            <FormSwitch label={t("settings:fields.isPublic")} checked={isPublic} onCheckedChange={setIsPublic} />
           </div>
           <FormTextarea
-            label="Value (JSON)"
+            label={t("settings:fields.valueJson")}
             required
             rows={6}
             className="font-mono text-xs"
@@ -147,18 +149,18 @@ export function SettingDialog({ open, onOpenChange, setting }: SettingDialogProp
             error={jsonError}
           />
           <FormTextarea
-            label="Description"
+            label={t("settings:fields.description")}
             rows={2}
             value={description}
             onChange={(value) => setDescription(value)}
           />
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
-              Cancel
+              {t("actions.cancel")}
             </Button>
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-              {setting ? "Save changes" : "Create setting"}
+              {setting ? t("actions.save") : t("settings:createTitle")}
             </Button>
           </DialogFooter>
         </form>

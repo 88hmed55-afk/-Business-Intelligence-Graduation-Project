@@ -1,0 +1,41 @@
+{
+  "title": "سجلات النشاط",
+  "description": "تتبع كل إجراء تم في التطبيق.",
+  "table": {
+    "action": "الإجراء",
+    "actor": "المستخدم",
+    "resource": "الموارد",
+    "target": "الهدف",
+    "details": "التفاصيل",
+    "date": "التاريخ",
+    "ipAddress": "عنوان IP"
+  },
+  "actions": {
+    "created": "إنشاء",
+    "updated": "تحديث",
+    "deleted": "حذف",
+    "logged_in": "تسجيل دخول",
+    "logged_out": "تسجيل خروج",
+    "exported": "تصدير",
+    "downloaded": "تنزيل",
+    "assigned": "تعيين",
+    "removed": "إزالة",
+    "adjusted": "تسوية",
+    "approved": "اعتماد",
+    "rejected": "رفض",
+    "publish": "نشر",
+    "archive": "أرشفة",
+    "restore": "استعادة",
+    "import": "استيراد"
+  },
+  "emptyTitle": "لا توجد سجلات نشاط",
+  "emptyDescription": "ستظهر هنا الإجراءات المنفذة في التطبيق.",
+  "searchPlaceholder": "بحث في سجلات النشاط…",
+  "filterAction": "كل الإجراءات",
+  "filterActor": "كل المستخدمين",
+  "loadFailed": "تعذر تحميل سجلات النشاط.",
+  "unknownActor": "مستخدم غير معروف",
+  "system": "النظام",
+  "noActivityTitle": "لا يوجد نشاط مسجّل",
+  "noActivityDescription": "ستظهر الإجراءات المنفذة عبر المنصة هنا."
+}

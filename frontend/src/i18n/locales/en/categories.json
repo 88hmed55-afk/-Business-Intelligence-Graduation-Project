@@ -1,0 +1,43 @@
+{
+  "title": "Categories",
+  "description": "Organize products into categories for easier management.",
+  "editDescription": "Update this category's details.",
+  "createDescription": "Add a new category to organize products.",
+  "add": "New category",
+  "create": "Add category",
+  "edit": "Edit category",
+  "delete": "Delete category",
+  "deleteConfirmTitle": "Delete category",
+  "deleteConfirmDescription": "Are you sure you want to delete \"{{name}}\"? Products in this category may be affected.",
+  "fields": {
+    "name": "Category name",
+    "namePlaceholder": "e.g. Electronics",
+    "slug": "Slug",
+    "parent": "Parent category",
+    "description": "Description",
+    "status": "Status",
+    "sortOrder": "Sort order"
+  },
+  "table": {
+    "category": "Category",
+    "parent": "Parent",
+    "slug": "Slug",
+    "sortOrder": "Sort order",
+    "created": "Created",
+    "products": "Products",
+    "status": "Status",
+    "actions": "Actions"
+  },
+  "emptyTitle": "No categories found",
+  "emptyDescription": "Try adjusting your search or filters.",
+  "searchPlaceholder": "Search categories…",
+  "none": "None",
+  "parentPlaceholder": "None (top level)",
+  "createdToast": "Category created successfully.",
+  "updatedToast": "Category updated successfully.",
+  "deletedToast": "Category deleted successfully.",
+  "deleteFailedToast": "Could not delete category",
+  "createFailedToast": "Could not create category",
+  "updateFailedToast": "Could not update category",
+  "loadFailed": "Could not load categories."
+}

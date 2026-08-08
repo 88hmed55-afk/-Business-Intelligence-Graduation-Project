@@ -1,0 +1,58 @@
+{
+  "title": "Users",
+  "description": "Manage user accounts and their access to the application.",
+  "add": "New user",
+  "create": "Add user",
+  "edit": "Edit user",
+  "delete": "Delete user",
+  "deleteConfirmTitle": "Delete user",
+  "deleteConfirmDescription": "Are you sure you want to delete the user \"{{name}}\"? This action cannot be undone.",
+  "createDescription": "Create a new user account.",
+  "editDescription": "Update this user's details and permissions.",
+  "fields": {
+    "fullName": "Full name",
+    "username": "Username",
+    "email": "Email",
+    "phone": "Phone",
+    "role": "Role",
+    "status": "Status",
+    "password": "Password",
+    "newPassword": "New password (optional)",
+    "confirmPassword": "Confirm password",
+    "isActive": "Active"
+  },
+  "table": {
+    "user": "User",
+    "username": "Username",
+    "role": "Role",
+    "status": "Status",
+    "created": "Created",
+    "lastLogin": "Last login",
+    "actions": "Actions"
+  },
+  "statuses": {
+    "active": "Active",
+    "inactive": "Inactive"
+  },
+  "roles": {
+    "admin": "Admin",
+    "analyst": "Analyst",
+    "viewer": "Viewer"
+  },
+  "super": "Super",
+  "never": "Never",
+  "activate": "Activate",
+  "deactivate": "Deactivate",
+  "emptyTitle": "No users found",
+  "emptyDescription": "Try adjusting your search or filters.",
+  "searchPlaceholder": "Search users…",
+  "filterRole": "All roles",
+  "createdToast": "User created successfully.",
+  "updatedToast": "User updated successfully.",
+  "deletedToast": "User deleted successfully.",
+  "statusUpdatedToast": "User status updated successfully.",
+  "createFailedToast": "Could not create user",
+  "updateFailedToast": "Could not update user",
+  "deleteFailedToast": "Could not delete user",
+  "loadFailed": "Could not load users."
+}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { ArrowUpRight, ArrowDownRight, Minus, PenLine, Plus, Search, Trash2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { DataPagination } from "@/components/common/DataPagination";
@@ -37,7 +38,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { KpiDialog } from "@/features/kpis/KpiDialog";
 import { KpiValueDialog } from "@/features/kpis/KpiValueDialog";
 import { kpisApi } from "@/features/kpis/api";
-import { ApiClientError } from "@/lib/api";
+import { getErrorMessage } from "@/lib/error-messages";
 import { cn, toTitleCase } from "@/lib/utils";
 import type { Kpi, KpiCategory } from "@/types";
 
@@ -54,6 +55,7 @@ const categories: KpiCategory[] = [
 ];
 
 export function KpisPage() {
+  const { t } = useTranslation();
   const { toast } = useToast();
 
   const [page, setPage] = useState(1);
@@ -87,25 +89,25 @@ export function KpisPage() {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => kpisApi.remove(id),
     onSuccess: () => {
-      toast({ title: "KPI deleted", variant: "success" });
+      toast({ title: t("kpis:deletedToast"), variant: "success" });
       setDeleting(null);
     },
     onError: (error: unknown) => {
       toast({
-        title: "Could not delete KPI",
-        description: error instanceof ApiClientError ? error.message : "Unexpected error",
+        title: t("kpis:deleteFailedToast"),
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     },
   });
 
   if (isError) {
-    return <ErrorState message="Could not load KPIs." onRetry={() => void refetch()} />;
+    return <ErrorState message={t("kpis:loadFailed")} onRetry={() => void refetch()} />;
   }
 
   return (
     <div className="space-y-6">
-      <PageHeader title="KPIs" description="Define and track your key performance indicators">
+      <PageHeader title={t("kpis:title")} description={t("kpis:description")}>
         <Button
           onClick={() => {
             setEditing(null);
@@ -113,16 +115,16 @@ export function KpisPage() {
           }}
         >
           <Plus className="h-4 w-4" />
-          New KPI
+          {t("kpis:add")}
         </Button>
       </PageHeader>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative max-w-sm flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            className="pl-9"
-            placeholder="Search KPIs…"
+            className="ps-9"
+            placeholder={t("kpis:searchPlaceholder")}
             value={search}
             onChange={(event) => setSearch(event.target.value)}
           />
@@ -135,13 +137,13 @@ export function KpisPage() {
           }}
         >
           <SelectTrigger className="w-full sm:w-44">
-            <SelectValue placeholder="Filter by category" />
+            <SelectValue placeholder={t("kpis:filterCategory")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All categories</SelectItem>
+            <SelectItem value="all">{t("kpis:allCategories")}</SelectItem>
             {categories.map((c) => (
               <SelectItem key={c} value={c}>
-                {toTitleCase(c)}
+                {t("kpis:categories." + c, { defaultValue: toTitleCase(c) })}
               </SelectItem>
             ))}
           </SelectContent>
@@ -156,21 +158,21 @@ export function KpisPage() {
         </div>
       ) : (data?.items.length ?? 0) === 0 ? (
         <EmptyState
-          title="No KPIs found"
-          description="Create your first KPI to start measuring performance."
+          title={t("kpis:emptyTitle")}
+          description={t("kpis:emptyDescription")}
         />
       ) : (
         <div className="rounded-xl border">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead className="text-right">Target</TableHead>
-                <TableHead className="text-right">Current</TableHead>
-                <TableHead className="min-w-[140px]">Achievement</TableHead>
-                <TableHead>Trend</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>{t("kpis:table.kpi")}</TableHead>
+                <TableHead>{t("kpis:table.category")}</TableHead>
+                <TableHead className="text-right">{t("kpis:fields.target")}</TableHead>
+                <TableHead className="text-right">{t("kpis:table.current")}</TableHead>
+                <TableHead className="min-w-[140px]">{t("kpis:table.achievement")}</TableHead>
+                <TableHead>{t("kpis:table.trend")}</TableHead>
+                <TableHead className="text-end">{t("kpis:table.actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -185,12 +187,16 @@ export function KpisPage() {
                       <div className="min-w-0">
                         <p className="font-medium">{kpi.name}</p>
                         {kpi.dashboard_id && (
-                          <p className="text-xs text-muted-foreground">Linked to dashboard</p>
+                          <p className="text-xs text-muted-foreground">{t("kpis:linkedToDashboard")}</p>
                         )}
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline">{toTitleCase(kpi.category)}</Badge>
+                      <Badge variant="outline">
+                        {t("kpis:categories." + kpi.category, {
+                          defaultValue: toTitleCase(kpi.category),
+                        })}
+                      </Badge>
                     </TableCell>
                     <TableCell className="text-right text-muted-foreground">
                       {target?.toLocaleString() ?? "—"}
@@ -202,7 +208,7 @@ export function KpisPage() {
                     </TableCell>
                     <TableCell>
                       {progress === null ? (
-                        <span className="text-xs text-muted-foreground">No data</span>
+                        <span className="text-xs text-muted-foreground">{t("kpis:noData")}</span>
                       ) : (
                         <div className="flex items-center gap-2">
                           <Progress
@@ -231,11 +237,11 @@ export function KpisPage() {
                         <Minus className="h-4 w-4 text-muted-foreground" />
                       )}
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-end">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <span className="sr-only">Actions</span>
+                            <span className="sr-only">{t("kpis:table.actions")}</span>
                             <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
                               <circle cx="12" cy="5" r="1.5" />
                               <circle cx="12" cy="12" r="1.5" />
@@ -246,7 +252,7 @@ export function KpisPage() {
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => setValueTarget(kpi)}>
                             <Plus />
-                            Record value
+                            {t("kpis:values.recordMeasurement")}
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => {
@@ -255,14 +261,14 @@ export function KpisPage() {
                             }}
                           >
                             <PenLine />
-                            Edit
+                            {t("actions.edit")}
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => setDeleting(kpi)}
                             className="text-destructive focus:text-destructive"
                           >
                             <Trash2 />
-                            Delete
+                            {t("actions.delete")}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -308,9 +314,9 @@ export function KpisPage() {
           if (!open) setDeleting(null);
         }}
         onConfirm={() => (deleting ? deleteMutation.mutateAsync(deleting.id) : Promise.resolve())}
-        title="Delete KPI"
-        description={deleting ? `Are you sure you want to delete "${deleting.name}"?` : undefined}
-        confirmLabel="Delete"
+        title={t("kpis:deleteConfirmTitle")}
+        description={deleting ? t("kpis:deleteConfirmDescription", { name: deleting.name }) : undefined}
+        confirmLabel={t("actions.delete")}
       />
     </div>
   );
