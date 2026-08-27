@@ -11,7 +11,6 @@
     "backend": {
       "root": "backend/",
       "framework": "fastapi",
-      "runtime": "python3.12",
       "entrypoint": "app/main.py",
       "functions": {
         "app/main.py": {
